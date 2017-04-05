@@ -1,0 +1,2 @@
+menutitle = "Colorbleed Scripts"
+scriptspath = ""
