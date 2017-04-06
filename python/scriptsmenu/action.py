@@ -1,5 +1,5 @@
 import os
-from PySide import QtGui, QtCore
+from PySide import QtGui
 
 
 class Action(QtGui.QAction):
@@ -9,6 +9,8 @@ class Action(QtGui.QAction):
         self._taglist = None
         self._command = None
         self._sourcetype = None
+        self._iconfile = None
+        self._label = None
 
     @property
     def root(self):
@@ -50,6 +52,22 @@ class Action(QtGui.QAction):
         """
         self._sourcetype = value
 
+    @property
+    def iconfile(self):
+        return self._iconfile
+
+    @iconfile.setter
+    def iconfile(self, value):
+        self._iconfile = value
+
+    @property
+    def label(self):
+        return self._label
+
+    @label.setter
+    def label(self, value):
+        self._label = value
+
     def run_command(self):
         """
         Run the command stored in the instance or copy the command to the 
@@ -70,23 +88,16 @@ class Action(QtGui.QAction):
             callback(self)
             return
 
-        # run from python file
-        if self._sourcetype == "file":
-            eval(self._process_command())
-        # run as mel
-        elif self._sourcetype == "mel":
-            exec(self._process_command())
-        # run as python
-        elif self._sourcetype == "python":
-            eval(self._command)
+        exec(self.process_command())
 
-    def _process_command(self):
+    def process_command(self):
         """
         Check if the command is a file which needs to be launched and if it 
         has a relative path, if so return the full path by expanding 
         environment variables.
         
-        Add your own command type to the list as
+        Add your own source type and required action to ensure callback
+        is stored correctly
 
         :return: a clean command
         :rtype: str
@@ -95,7 +106,9 @@ class Action(QtGui.QAction):
             return self._command
 
         if self._sourcetype == "mel":
-            return "import maya; maya.mel.eval('{}')".format(self._command)
+            # Escape single quotes
+            conversion = self._command.replace("'", "\\'")
+            return "import maya; maya.mel.eval('{}')".format(conversion)
 
         if self._sourcetype == "file":
             if os.path.isabs(self._command):
@@ -104,26 +117,3 @@ class Action(QtGui.QAction):
                 string = os.path.normpath(os.path.expandvars(self._command))
 
             return 'execfile("{}")'.format(string)
-
-    def _process_for_button(self):
-        """
-        Check if the command is a file which needs to be launched and if it 
-        has a relative path, if so return the full path by expanding 
-        environment variables.
-
-        :return: a clean command
-        :rtype: str
-        """
-        if self._sourcetype == "python":
-            return "eval({})".format(self._command)
-
-        if self._sourcetype == "mel":
-            return self._command
-
-        if self._sourcetype == "file":
-            if os.path.isabs(self._command):
-                string = os.path.normpath(self._command)
-            else:
-                string = os.path.normpath(os.path.expandvars(self._command))
-
-            return "execfile(r'{}')".format(string)

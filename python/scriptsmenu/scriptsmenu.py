@@ -5,6 +5,7 @@ from collections import OrderedDict
 from PySide import QtGui
 
 import action
+reload(action)
 
 
 class ScriptsMenu(QtGui.QMenu):
@@ -209,8 +210,13 @@ class ScriptsMenu(QtGui.QMenu):
 
         # apply icon if found
         if "icon" in configuration:
-            script_action_icon = QtGui.QIcon(configuration["icon"])
+            iconfile = os.path.expandvars(configuration["icon"])
+            script_action.iconfile = iconfile
+            script_action_icon = QtGui.QIcon(iconfile)
             script_action.setIcon(script_action_icon)
+
+        if 'label' in configuration:
+            script_action.label = configuration['label']
 
         # add information to the action
         script_action.setStatusTip(configuration["tooltip"])

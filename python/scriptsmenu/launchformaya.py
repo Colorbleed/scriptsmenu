@@ -1,3 +1,4 @@
+import os
 import shiboken
 from PySide import QtGui, QtCore
 
@@ -6,6 +7,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 import scriptsmenu
+reload(scriptsmenu)
 
 
 def toshelf(action):
@@ -18,19 +20,17 @@ def toshelf(action):
     :return: None
     """
 
-    sourcetype = action.sourcetype
-
     shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
     current_active_shelf = cmds.tabLayout(shelftoplevel,
                                           query=True,
                                           selectTab=True)
-    if sourcetype == "file":
-        sourcetype = "python"
 
-    cmds.shelfButton(command=action.command,
-                     image="pythonFamily.png",
-                     sourceType=sourcetype,
-                     parent=current_active_shelf)
+    cmds.shelfButton(command=action.process_command(),
+                     sourceType="python",
+                     parent=current_active_shelf,
+                     image=action.iconfile or "pythonFamily.png",
+                     annotation=action.statusTip(),
+                     imageOverlayLabel=action.label or '')
 
 
 def _getmayawindow():
@@ -50,9 +50,7 @@ def _getmayawindow():
 
 def main(configuration, title):
     mayamainbar = _getmayawindow()
-    menu = scriptsmenu.main(configuration,
-                            title=title,
-                            parent=mayamainbar)
+    menu = scriptsmenu.main(configuration, title=title, parent=mayamainbar)
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier

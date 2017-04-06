@@ -13,6 +13,7 @@ site.addsitedir(os.path.abspath(python_folder))
 
 def example_maya_intergration():
     import scriptsmenu.launchformaya as launchformaya
+    reload(launchformaya)
     launchformaya.main(config, "Example Scripts")
 
 
