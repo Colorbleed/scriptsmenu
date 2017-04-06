@@ -1,4 +1,3 @@
-import os
 import shiboken
 from PySide import QtGui, QtCore
 
