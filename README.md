@@ -23,8 +23,6 @@ To ensure the menu is complete with the correct submenus and actions you will ne
 in a .json file ( example : samples/sample_configuration.json ) The key is the department name, the value is 
 a list of dictionaries which are the actions linked to the department.
 
-<br>
-
 ##### Relative paths
 
 Please check the samples folder of this package for an example python file which can be run.
@@ -42,6 +40,8 @@ import scriptsmenu.launchformaya as launchformaya
 configuration = os.path.expandvars('path_to_configuration\\configuration.json')
 launchformaya.main(configuration, "My Scripts")
 ```
+
+To show at launch in Maya ensure the code is pasted in the in the usersetup.py of the Maya which is launched
 
 <br>
 
