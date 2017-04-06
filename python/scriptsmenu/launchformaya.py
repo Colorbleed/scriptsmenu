@@ -1,13 +1,39 @@
 import shiboken
-from PySide import QtGui
+from PySide import QtGui, QtCore
 
 import maya.OpenMayaUI as omui
+import maya.cmds as cmds
+import maya.mel as mel
 
 import scriptsmenu
 
 
-def getmayawindow():
+def toshelf(action):
+    """
+    Copy clicked menu item to the currently active Maya shelf 
 
+    :param action: the action instance which is clicked
+    :type action: QtGui.QAction
+
+    :return: None
+    """
+
+    sourcetype = action.sourcetype
+
+    shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
+    current_active_shelf = cmds.tabLayout(shelftoplevel,
+                                          query=True,
+                                          selectTab=True)
+    if sourcetype == "file":
+        sourcetype = "python"
+
+    cmds.shelfButton(command=action.command,
+                     image="pythonFamily.png",
+                     sourceType=sourcetype,
+                     parent=current_active_shelf)
+
+
+def _getmayawindow():
     """Retrieve the main menubar of the Maya window"""
     parent = omui.MQtUtil.mainWindow()
     if not parent:
@@ -22,11 +48,12 @@ def getmayawindow():
     return menubar[0]
 
 
-def main():
-    mayamainbar = getmayawindow()
-    scriptsmenu.main(mayamainbar)
+def main(configuration, title):
+    mayamainbar = _getmayawindow()
+    menu = scriptsmenu.main(configuration,
+                            title=title,
+                            parent=mayamainbar)
 
-
-if __name__ == '__main__':
-    main()
-
+    # Register control + shift callback to add to shelf (maya behavior)
+    modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
+    menu.register_callback(modifiers, toshelf)

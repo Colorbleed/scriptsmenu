@@ -1,0 +1,23 @@
+{
+  "Launcher": [
+    {
+      "title": "Echo command",
+      "tooltip": "Test print",
+      "command": "print('I am a tool launcher!')",
+      "type": "python",
+      "taglist": ["test", "script", "echo", "command"]
+    },
+    {"title": "Echo second command",
+      "tooltip": "Test print",
+      "command": "print('I am a tool killer!')",
+      "type": "python",
+      "taglist": ["test", "script", "echo", "command"]
+    },
+    {"title": "Launch script A",
+      "tooltip": "Test launcher",
+      "command": "C:\\Users\\User\\Documents\\development\\scriptsmenu\\python\\scriptsmenu\\samples\\script_a.py",
+      "type": "file",
+      "taglist": ["test", "script", "launch"]
+    }
+  ]
+}

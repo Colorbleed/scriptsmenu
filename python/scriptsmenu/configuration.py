@@ -1,2 +1,0 @@
-menutitle = "Colorbleed Scripts"
-scriptspath = ""

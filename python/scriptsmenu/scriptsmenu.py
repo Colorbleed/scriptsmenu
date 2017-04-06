@@ -4,62 +4,72 @@ from collections import OrderedDict
 
 from PySide import QtGui
 
-import configuration
 import action
 
 
 class ScriptsMenu(QtGui.QMenu):
 
-    def __init__(self):
+    def __init__(self, configuration, title, parent=None):
+        """
+        
+        :param configuration: the path to the configuration file which dictates
+        the which buttons get created with which command
+        :type configuration: str
+        
+        :param title: the name of the root menu which will be created
+        :type title: str
+        
+        :param parent: the QObject to parent the menu to
+        :type parent: QtGui.QObject
+        
+        :returns: None
+        """
         QtGui.QMenu.__init__(self)
 
         self.searchbar = None
         self.script_configurations = None
         self._script_actions = []
+        self._callbacks = {}
+
+        self._parent = parent
+        # normalize path to match the OS
+        self._configuration = os.path.normpath(configuration)
         self._default_items = ["Searchbar", "Update Scripts"]
 
         self._process_configuration()
 
+        self.setTitle(title)
+
+        # add default items in the menu
+        self.create_default_items()
+
+        # add items from configuration
+        self.update_menu()
+
+        if self._parent:
+            self._parent.addMenu(self)
+
+    @property
+    def registered_callbacks(self):
+        return self._callbacks.copy()
+
     def _process_configuration(self):
-        """Process the configurations"""
+        """Process the configurations and store the configuration"""
 
-        if os.path.isfile(configuration.scriptspath):
-            configfile = configuration.scriptspath
-        else:
-            configfile = os.path.join(os.path.dirname(__file__),
-                                      'scripts.json')
+        if not os.path.isfile(self._configuration):
+            raise AttributeError("Given configuration is not "
+                                 "a file!\n'{}'".format(self._configuration))
 
-        # get settings
-        with open(configfile, "r") as f:
+        extension = os.path.splitext(self._configuration)[-1]
+        if extension != ".json":
+            raise AttributeError("Given configuration file has unsupported "
+                                 "file type, provide a .json file")
+
+        # retrieve and store config
+        with open(self._configuration, "r") as f:
             self.script_configurations = OrderedDict(json.load(f))
 
-    def create_menu(self, parent):
-        """Create the main menu which holds all the scripts"""
-
-        self.setTitle(configuration.menutitle)
-
-        # add search bar
-        self.create_searchbar()
-
-        # add update button
-        update_action = QtGui.QAction(self)
-        update_action.setObjectName("Update Scripts")
-        update_action.setText("Update Scripts")
-        self.addAction(update_action)
-
-        # iter over department configurations
-        for department, configurations in self.script_configurations.items():
-            menu = self.create_department_menu(department)
-            self.create_script_entries(menu, configurations)
-
-        # link function to search bar
-        self.searchbar.textChanged.connect(self._search_for_script)
-        update_action.triggered.connect(self.update_menu)
-
-        if parent:
-            parent.addMenu(self)
-
-    def create_searchbar(self):
+    def create_default_items(self):
         """
         Add a searchbar to the top of the menu given
         
@@ -76,12 +86,20 @@ class ScriptsMenu(QtGui.QMenu):
 
         # create widget holder
         searchbar_action = QtGui.QWidgetAction(self)
+
         # add widget to widget holder
         searchbar_action.setDefaultWidget(self.searchbar)
         searchbar_action.setObjectName("Searchbar")
 
-        # link widget holder to parent
+        # add update button
+        update_action = QtGui.QAction(self)
+        update_action.setObjectName("Update Scripts")
+        update_action.setText("Update Scripts")
+        update_action.triggered.connect(self.update_menu)
+
+        # add action to menu
         self.addAction(searchbar_action)
+        self.addAction(update_action)
 
     def update_menu(self):
         """Update the menu items without destroying the existing menu"""
@@ -100,7 +118,7 @@ class ScriptsMenu(QtGui.QMenu):
 
             # create new menu item
             menu = self.create_department_menu(department)
-            self.create_script_entries(menu, configs)
+            self.create_menu_entries(menu, configs)
 
         # remove left overs if there are any while keep the default
         if len(departments) != len(self._default_items):
@@ -113,8 +131,8 @@ class ScriptsMenu(QtGui.QMenu):
         Create the department menu which acts as a parent for the script menu 
         items
 
-        :param parent: The parent to add the new menu under
-        :type parent: QtGui.QWidget object
+        :param department: The parent to add the new menu under
+        :type department: QtGui.QWidget object
 
         :param department: the name of the department which will be the title
         :type department: str
@@ -130,9 +148,9 @@ class ScriptsMenu(QtGui.QMenu):
 
         return department_menu
 
-    def create_script_entries(self, parent, configurations):
+    def create_menu_entries(self, parent, configurations):
         """
-        Create all sub menu items which launch the scripts
+        Create all sub menu items which launch the samples
 
         :param parent: the parent widget to add the new menu to
         :type parent: QtGui.QMenu
@@ -150,13 +168,14 @@ class ScriptsMenu(QtGui.QMenu):
                 parent.addSeparator()
                 continue
 
-            script_action = self._create_script_action(name, config, parent)
+            script_action = self._create_script_action(name, config,
+                                                       self, parent)
             parent.addAction(script_action)
 
             # add item instance to tool for quick search
             self._script_actions.append(script_action)
 
-    def _create_script_action(self, name, configuration, parent):
+    def _create_script_action(self, name, configuration, root, parent):
         """
         Create a custom action instance which can be added to the menu
         
@@ -167,7 +186,10 @@ class ScriptsMenu(QtGui.QMenu):
         command type, taglist
         :type configuration: dict
         
-        :param parent: the parent widget to wich it will be linked
+        :param root: the parent widget to which it will be linked
+        :type root: QtGui.QMenu
+        
+        :param parent: the parent widget to which it will be linked
         :type parent: QtGui.QWidget        
                 
         :return: an action instance
@@ -182,21 +204,30 @@ class ScriptsMenu(QtGui.QMenu):
         script_action.setText(name)
         script_action.setObjectName(name)
 
+        # link action to root for callback library
+        script_action.root = root
+
+        # apply icon if found
+        if "icon" in configuration:
+            script_action_icon = QtGui.QIcon(configuration["icon"])
+            script_action.setIcon(script_action_icon)
+
         # add information to the action
         script_action.setStatusTip(configuration["tooltip"])
         script_action.taglist = configuration["taglist"]
 
         # connect to internal command
-        script_action.commandtype = configuration["type"]
+        script_action.sourcetype = configuration["type"]
 
         # get correct path if the command is a file
         script_action.command = self._process_command(configuration["command"],
                                                       configuration["type"])
+
         script_action.triggered.connect(script_action.run_command)
 
         return script_action
 
-    def _process_command(self, command, commandtype=None):
+    def _process_command(self, command, sourcetype=None):
         """
         Check if the command is a file which needs to be launched and if it 
         has a relative path, if so return the full path by expanding 
@@ -212,7 +243,7 @@ class ScriptsMenu(QtGui.QMenu):
         :return: a clean command
         :rtype: str
         """
-        if commandtype != "file":
+        if sourcetype != "file":
             return command
 
         if os.path.isabs(command):
@@ -222,7 +253,7 @@ class ScriptsMenu(QtGui.QMenu):
 
     def _search_for_script(self):
         """
-        Hide all he scripts which do not match the user's import
+        Hide all he samples which do not match the user's import
         
         :return: None
         """
@@ -247,44 +278,21 @@ class ScriptsMenu(QtGui.QMenu):
 
         return has_match
 
-    def _is_department_live(self, parent, department):
-        """
-        Check of the CB Scripts root menu is already in the menubar
-        
-        :param menubar: the menubar of the Maya main window
-        :type menubar: QtGui.QMenu
-        
-        :param department: the title of the menu item
-        :type department: str
-        
-        :return: the CB Script instance or None
-        :rtype: QtGui.QMenu
-        """
-        child = [ch for ch in parent.children() if isinstance(ch, QtGui.QMenu)
-                 and ch.title() == department]
-
-        if child:
-            child = child[0]
-
-        return child
+    def register_callback(self, modifiers, callback):
+        self._callbacks[int(modifiers)] = callback
 
 
-def application(parent=None):
+def application(configuration, parent):
     import sys
     app = QtGui.QApplication(sys.argv)
 
-    scriptsmenu = ScriptsMenu()
-    scriptsmenu.create_menu(parent)
+    scriptsmenu = ScriptsMenu(configuration, parent)
     scriptsmenu.show()
 
     sys.exit(app.exec_())
 
 
-def main(parent=None):
+def main(configuration, title, parent=None):
     global script_menu
-    script_menu = ScriptsMenu()
-    script_menu.create_menu(parent)
-
-
-if __name__ == '__main__':
-    main()
+    script_menu = ScriptsMenu(configuration, title, parent)
+    return script_menu
