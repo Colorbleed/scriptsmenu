@@ -31,7 +31,7 @@ def toshelf(action):
                      imageOverlayLabel=action.label or '')
 
 
-def _getmayawindow():
+def _getmayamenubar():
     """Retrieve the main menubar of the Maya window"""
     parent = omui.MQtUtil.mainWindow()
     if not parent:
@@ -47,7 +47,7 @@ def _getmayawindow():
 
 
 def main(configuration, title):
-    mayamainbar = _getmayawindow()
+    mayamainbar = _getmayamenubar()
     menu = scriptsmenu.main(configuration, title=title, parent=mayamainbar)
 
     # Register control + shift callback to add to shelf (maya behavior)
