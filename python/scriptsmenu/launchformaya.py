@@ -7,7 +7,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 import scriptsmenu
-reload(scriptsmenu)
 
 
 def toshelf(action):

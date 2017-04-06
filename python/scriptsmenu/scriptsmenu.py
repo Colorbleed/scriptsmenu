@@ -5,7 +5,6 @@ from collections import OrderedDict
 from PySide import QtGui
 
 import action
-reload(action)
 
 
 class ScriptsMenu(QtGui.QMenu):
