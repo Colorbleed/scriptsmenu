@@ -11,7 +11,7 @@ python_folder = os.path.join(os.path.dirname(__file__), '..', 'python')
 site.addsitedir(os.path.abspath(python_folder))
 
 
-def example_maya_intergration():
+def example_maya_integration():
     import scriptsmenu.launchformaya as launchformaya
     reload(launchformaya)
     launchformaya.main(config, "Example Scripts")

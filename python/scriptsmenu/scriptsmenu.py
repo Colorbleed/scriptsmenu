@@ -4,11 +4,10 @@ from collections import OrderedDict
 
 from PySide import QtGui
 
-import action
+from . import action
 
 
 class ScriptsMenu(QtGui.QMenu):
-
     def __init__(self, configuration, title, parent=None):
         """
         
@@ -24,17 +23,15 @@ class ScriptsMenu(QtGui.QMenu):
         
         :returns: None
         """
-        QtGui.QMenu.__init__(self)
+        QtGui.QMenu.__init__(self, parent)
 
         self.searchbar = None
         self.script_configurations = None
         self._script_actions = []
         self._callbacks = {}
 
-        self._parent = parent
         # normalize path to match the OS
         self._configuration = os.path.normpath(configuration)
-        self._default_items = ["Searchbar", "Update Scripts"]
 
         self._process_configuration()
 
@@ -46,8 +43,7 @@ class ScriptsMenu(QtGui.QMenu):
         # add items from configuration
         self.update_menu()
 
-        if self._parent:
-            self._parent.addMenu(self)
+        self.parent.addMenu(self)
 
     @property
     def registered_callbacks(self):
@@ -90,6 +86,7 @@ class ScriptsMenu(QtGui.QMenu):
         # add widget to widget holder
         searchbar_action.setDefaultWidget(self.searchbar)
         searchbar_action.setObjectName("Searchbar")
+        self.searchbar.textChanged.connect(self._search_for_script)
 
         # add update button
         update_action = QtGui.QAction(self)
@@ -101,30 +98,23 @@ class ScriptsMenu(QtGui.QMenu):
         self.addAction(searchbar_action)
         self.addAction(update_action)
 
+        # add separator object
+        separator = self.addSeparator()
+        separator.setObjectName("separator")
+
     def update_menu(self):
         """Update the menu items without destroying the existing menu"""
 
         self._process_configuration()
 
-        departments = self.actions()
-        for department, configs in self.script_configurations.items():
-            # check if department menu exists
-            actions = [d for d in departments if d.text() == department]
-            if actions:
-                # remove found department menu
-                script_action = actions[0]
-                self.removeAction(script_action)
-                departments.remove(script_action)
+        departments = [action for action in self.actions() if action.menu()]
+        for department in departments:
+            self.removeAction(department)
 
+        for department, configs in self.script_configurations.items():
             # create new menu item
             menu = self.create_department_menu(department)
             self.create_menu_entries(menu, configs)
-
-        # remove left overs if there are any while keep the default
-        if len(departments) != len(self._default_items):
-            for department in departments:
-                if department.text() not in self._default_items:
-                    self.removeAction(department)
 
     def create_department_menu(self, department):
         """
@@ -168,14 +158,14 @@ class ScriptsMenu(QtGui.QMenu):
                 parent.addSeparator()
                 continue
 
-            script_action = self._create_script_action(name, config,
-                                                       self, parent)
+            script_action = self._create_script_action(name, config, parent)
             parent.addAction(script_action)
 
             # add item instance to tool for quick search
+            self._script_action_ids.append(name)
             self._script_actions.append(script_action)
 
-    def _create_script_action(self, name, configuration, root, parent):
+    def _create_script_action(self, name, configuration, parent):
         """
         Create a custom action instance which can be added to the menu
         
@@ -185,9 +175,6 @@ class ScriptsMenu(QtGui.QMenu):
         :param configuration: the settings for action such as command, 
         command type, taglist
         :type configuration: dict
-        
-        :param root: the parent widget to which it will be linked
-        :type root: QtGui.QMenu
         
         :param parent: the parent widget to which it will be linked
         :type parent: QtGui.QWidget        
@@ -205,7 +192,7 @@ class ScriptsMenu(QtGui.QMenu):
         script_action.setObjectName(name)
 
         # link action to root for callback library
-        script_action.root = root
+        script_action.root = self
 
         # apply icon if found
         if "icon" in configuration:
@@ -264,24 +251,35 @@ class ScriptsMenu(QtGui.QMenu):
         """
 
         current_text = self.searchbar.text()
-        if current_text == '':
+        if not current_text:
             for action in self._script_actions:
                 action.setVisible(True)
+        else:
+            for action in self._script_actions:
+                if not self._get_match(action, current_text.lower()):
+                    action.setVisible(False)
 
-        for action in self._script_actions:
-            if not self._get_match(action, current_text):
-                action.setVisible(False)
+        for department in self.actions():
+            if not department.menu():
+                continue
+
+            menu = department.menu()
+            visible = any(action.isVisible() for action in menu.actions())
+            department.setVisible(visible)
 
     def _get_match(self, action, tag):
-        """Check of action has tags have a match with given tag"""
+        """
+        Check of action has tags have a match with given tag
+        :param action:
+        :param tag:
+        """
 
-        has_match = False
         for tagitem in action.taglist:
             if tag not in tagitem:
                 continue
-            has_match = True
+            return True
 
-        return has_match
+        return False
 
     def register_callback(self, modifiers, callback):
         self._callbacks[int(modifiers)] = callback
