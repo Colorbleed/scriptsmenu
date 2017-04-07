@@ -2,18 +2,17 @@
 import os
 import site
 
-# set example evironment variable
+# set the example evironment variable
 os.environ["SCRIPTMENU"] = os.path.dirname(__file__)
 config = os.path.expandvars(r"$SCRIPTMENU\\sample_configuration_a.json")
 
-# add scriptmenu python folder
+# add the scriptmenu python folder
 python_folder = os.path.join(os.path.dirname(__file__), '..', 'python')
 site.addsitedir(os.path.abspath(python_folder))
 
 
 def example_maya_integration():
     import scriptsmenu.launchformaya as launchformaya
-    reload(launchformaya)
     launchformaya.main(config, "Example Scripts")
 
 

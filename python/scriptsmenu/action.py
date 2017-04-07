@@ -3,8 +3,11 @@ from PySide import QtGui
 
 
 class Action(QtGui.QAction):
+
     def __init__(self, parent=None):
+
         QtGui.QAction.__init__(self, parent)
+
         self._root = None
         self._taglist = None
         self._command = None
@@ -26,7 +29,6 @@ class Action(QtGui.QAction):
 
     @taglist.setter
     def taglist(self, value):
-        """Add the value to the list"""
         self._taglist = value
 
     @property
@@ -35,6 +37,15 @@ class Action(QtGui.QAction):
 
     @command.setter
     def command(self, value):
+        """
+        Store the command in the QAction 
+        
+        :param value: the full command which needs to be executed when clicked,
+        it is also used to pass the command to the 
+        :type value: str
+        
+        :return: 
+        """
         self._command = value
 
     @property
@@ -58,6 +69,12 @@ class Action(QtGui.QAction):
 
     @iconfile.setter
     def iconfile(self, value):
+        """
+        Store the path to the image file which needs to be displayed
+        :param value: the path to the image
+        :type value: str
+        :return: 
+        """
         self._iconfile = value
 
     @property
@@ -66,14 +83,20 @@ class Action(QtGui.QAction):
 
     @label.setter
     def label(self, value):
+        """
+        Set the abbreviation which will be used as overlay text in the shelf
+        
+        :param value: an abbreviation of the name
+        :type value: str
+        
+        :return: 
+        """
         self._label = value
 
     def run_command(self):
         """
-        Run the command stored in the instance or copy the command to the 
-        active shelf
-        
-        :return: None
+        Run the command of the instance or copy the command to the active shelf
+        based on the current modifiers.
         """
 
         # get the current application and its linked keyboard modifiers
@@ -94,12 +117,19 @@ class Action(QtGui.QAction):
         """
         Check if the command is a file which needs to be launched and if it 
         has a relative path, if so return the full path by expanding 
-        environment variables.
+        environment variables. Wrap any mel command in a executable string 
+        for Python and return the string if the source type is  
         
-        Add your own source type and required action to ensure callback
-        is stored correctly
+        Add your own source type and required process to ensure callback
+        is stored correctly.
+        
+        An example of a process is the sourcetype is MEL 
+        (Maya Embedded Language) as Python cannot run it on its own so it 
+        needs to be wrapped in a string in which we explicitly import mel and 
+        run it as a mel.eval. The string is then parsed to python as 
+        exec("command"). 
 
-        :return: a clean command
+        :return: a clean command which can be used
         :rtype: str
         """
         if self._sourcetype == "python":

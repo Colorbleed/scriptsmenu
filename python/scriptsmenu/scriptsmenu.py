@@ -8,6 +8,7 @@ from . import action
 
 
 class ScriptsMenu(QtGui.QMenu):
+
     def __init__(self, configuration, title, parent=None):
         """
         
@@ -33,8 +34,8 @@ class ScriptsMenu(QtGui.QMenu):
         # normalize path to match the OS
         self._configuration = os.path.normpath(configuration)
 
+        # get configuration
         self._process_configuration()
-
         self.setTitle(title)
 
         # add default items in the menu
@@ -43,42 +44,21 @@ class ScriptsMenu(QtGui.QMenu):
         # add items from configuration
         self.update_menu()
 
-        self.parent.addMenu(self)
+        if parent:
+            parent.addMenu(self)
 
     @property
     def registered_callbacks(self):
         return self._callbacks.copy()
 
-    def _process_configuration(self):
-        """Process the configurations and store the configuration"""
-
-        if not os.path.isfile(self._configuration):
-            raise AttributeError("Given configuration is not "
-                                 "a file!\n'{}'".format(self._configuration))
-
-        extension = os.path.splitext(self._configuration)[-1]
-        if extension != ".json":
-            raise AttributeError("Given configuration file has unsupported "
-                                 "file type, provide a .json file")
-
-        # retrieve and store config
-        with open(self._configuration, "r") as f:
-            self.script_configurations = OrderedDict(json.load(f))
-
     def create_default_items(self):
-        """
-        Add a searchbar to the top of the menu given
-        
-        :param parent: a menu instance
-        :type parent: QtGui.QMenu
-        
-        :return: None 
-        """
+        """Add a search bar to the top of the menu given"""
 
-        # create widget
+        # create widget and link function
         self.searchbar = QtGui.QLineEdit()
         self.searchbar.setFixedWidth(120)
         self.searchbar.setPlaceholderText("Search ...")
+        self.searchbar.textChanged.connect(self._search_for_script)
 
         # create widget holder
         searchbar_action = QtGui.QWidgetAction(self)
@@ -86,9 +66,8 @@ class ScriptsMenu(QtGui.QMenu):
         # add widget to widget holder
         searchbar_action.setDefaultWidget(self.searchbar)
         searchbar_action.setObjectName("Searchbar")
-        self.searchbar.textChanged.connect(self._search_for_script)
 
-        # add update button
+        # add update button and link function
         update_action = QtGui.QAction(self)
         update_action.setObjectName("Update Scripts")
         update_action.setText("Update Scripts")
@@ -162,23 +141,72 @@ class ScriptsMenu(QtGui.QMenu):
             parent.addAction(script_action)
 
             # add item instance to tool for quick search
-            self._script_action_ids.append(name)
             self._script_actions.append(script_action)
+
+    def register_callback(self, modifiers, callback):
+        self._callbacks[int(modifiers)] = callback
+
+    def _get_resource_folder(self):
+        """Get the resource folder for the standard icons"""
+
+        currentdir = os.path.dirname(__file__)
+        to_resources = os.path.join(currentdir, '..', '..', 'resources')
+        self._resources = os.path.abspath(to_resources)
+
+    def _process_configuration(self):
+        """Process the configurations and store the configuration"""
+
+        if not os.path.isfile(self._configuration):
+            raise AttributeError("Given configuration is not "
+                                 "a file!\n'{}'".format(self._configuration))
+
+        extension = os.path.splitext(self._configuration)[-1]
+        if extension != ".json":
+            raise AttributeError("Given configuration file has unsupported "
+                                 "file type, provide a .json file")
+
+        # retrieve and store config
+        with open(self._configuration, "r") as f:
+            self.script_configurations = OrderedDict(json.load(f))
+
+    def _process_command(self, command, sourcetype=None):
+        """
+        Check if the command is a file which needs to be launched and if it 
+        has a relative path, if so return the full path by expanding 
+        environment variables.
+        
+        :param command: the path to the command to 
+        :type command: str
+        
+        :param commandtype: set the type of command which the action will 
+        trigger when pressed. Currently supported : "file", "mel", "python"
+        :type commandtype: str
+        
+        :return: a clean command
+        :rtype: str
+        """
+        if sourcetype != "file":
+            return command
+
+        if os.path.isabs(command):
+            return os.path.normpath(command)
+        else:
+            return os.path.normpath(os.path.expandvars(command))
 
     def _create_script_action(self, name, configuration, parent):
         """
         Create a custom action instance which can be added to the menu
-        
+
         :param name: the display name of the action
         :type name: str
-        
+
         :param configuration: the settings for action such as command, 
         command type, taglist
         :type configuration: dict
-        
+
         :param parent: the parent widget to which it will be linked
         :type parent: QtGui.QWidget        
-                
+
         :return: an action instance
         :rtype QtGui.QAction
         """
@@ -219,30 +247,6 @@ class ScriptsMenu(QtGui.QMenu):
 
         return script_action
 
-    def _process_command(self, command, sourcetype=None):
-        """
-        Check if the command is a file which needs to be launched and if it 
-        has a relative path, if so return the full path by expanding 
-        environment variables.
-        
-        :param command: the path to the command to 
-        :type command: str
-        
-        :param commandtype: set the type of command which the action will 
-        trigger when pressed. Currently supported : "file", "mel", "python"
-        :type commandtype: str
-        
-        :return: a clean command
-        :rtype: str
-        """
-        if sourcetype != "file":
-            return command
-
-        if os.path.isabs(command):
-            return os.path.normpath(command)
-        else:
-            return os.path.normpath(os.path.expandvars(command))
-
     def _search_for_script(self):
         """
         Hide all he samples which do not match the user's import
@@ -281,8 +285,7 @@ class ScriptsMenu(QtGui.QMenu):
 
         return False
 
-    def register_callback(self, modifiers, callback):
-        self._callbacks[int(modifiers)] = callback
+
 
 
 def application(configuration, parent):
