@@ -169,30 +169,6 @@ class ScriptsMenu(QtGui.QMenu):
         with open(self._configuration, "r") as f:
             self.script_configurations = OrderedDict(json.load(f))
 
-    def _process_command(self, command, sourcetype=None):
-        """
-        Check if the command is a file which needs to be launched and if it 
-        has a relative path, if so return the full path by expanding 
-        environment variables.
-        
-        :param command: the path to the command to 
-        :type command: str
-        
-        :param commandtype: set the type of command which the action will 
-        trigger when pressed. Currently supported : "file", "mel", "python"
-        :type commandtype: str
-        
-        :return: a clean command
-        :rtype: str
-        """
-        if sourcetype != "file":
-            return command
-
-        if os.path.isabs(command):
-            return os.path.normpath(command)
-        else:
-            return os.path.normpath(os.path.expandvars(command))
-
     def _create_script_action(self, name, configuration, parent):
         """
         Create a custom action instance which can be added to the menu
@@ -235,13 +211,8 @@ class ScriptsMenu(QtGui.QMenu):
         # add information to the action
         script_action.setStatusTip(configuration["tooltip"])
         script_action.taglist = configuration["taglist"]
-
-        # connect to internal command
         script_action.sourcetype = configuration["type"]
-
-        # get correct path if the command is a file
-        script_action.command = self._process_command(configuration["command"],
-                                                      configuration["type"])
+        script_action.command = configuration["command"]
 
         script_action.triggered.connect(script_action.run_command)
 
@@ -284,8 +255,6 @@ class ScriptsMenu(QtGui.QMenu):
             return True
 
         return False
-
-
 
 
 def application(configuration, parent):
