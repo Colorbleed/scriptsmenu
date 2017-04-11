@@ -48,7 +48,9 @@ def _getmayamenubar():
 
 def main(configuration, title):
     mayamainbar = _getmayamenubar()
-    menu = scriptsmenu.main(configuration, title=title, parent=mayamainbar)
+    menu = scriptsmenu.ScriptsMenu(configuration,
+                                   title=title,
+                                   parent=mayamainbar)
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier

@@ -265,9 +265,3 @@ def application(configuration, parent):
     scriptsmenu.show()
 
     sys.exit(app.exec_())
-
-
-def main(configuration, title, parent=None):
-    global script_menu
-    script_menu = ScriptsMenu(configuration, title, parent)
-    return script_menu
