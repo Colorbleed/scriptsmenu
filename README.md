@@ -16,7 +16,8 @@ The user can search for the actions based on keywords.
 <br>
 
 #### Installation
-To install download this package and place it in a directory where Maya can find it.
+
+To install download this package and place it on your `PYTHONPATH`.
 
 <br>
 
@@ -37,6 +38,13 @@ scripts_menu.show()
 
 ##### Example usage in Autodesk Maya
 
+To parent the scripts menu to an application you'll need a parent Qt widget from the host application.
+You can pass this parent as parent to the `ScriptMenu(parent=parent)`.
+
+Additionally if you want to alter the behavior when clicking a menu item with specific modifier buttons held (e.g. Control + Shift) you can register a callback. See the _Register callback_ example under _Advanced_ below.
+
+An example for Autodesk Maya can be found in `launchformaya.py`
+
 To show the menu in Maya:
 
 ```python
@@ -47,16 +55,26 @@ launchformaya.main(configuration,
                    title="My Scripts")
 ```
 
-To show at Maya launch you can paste the above code in your `userSetup.py`
+This will automatically parent it to Maya's main menu bar.
+
+To show the menu at Maya launch you can add code to your `userSetup.py`. This code will need to be executed deferred to ensure it runs when Maya main menu bar already exist. For example:
+
+```python
+import maya.utils
+import scriptsmenu.launchformaya as launchformaya
+
+def build_menu():
+    configuration = "path/to/configuration.json"
+    launchformaya.main(configuration,
+                       title="My Scripts")
+
+maya.utils.executeDeferred(build_menu)
+```
 
 <br>
 
 ### Advanced
 
-To ensure the menu can be used in other packages besides Maya it recommended to create a separate launcher file (py)
-which checks for the parent to hook the menu to.
-The action which is triggered when clicked in the menu will also need to adjusted in order to process the commands
-to match the package
 
 #### Relative paths
 
