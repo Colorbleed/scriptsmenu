@@ -1,14 +1,12 @@
-import shiboken
-from PySide import QtGui, QtCore
+from Qt import QtGui, QtCore, QtWidgets
 
-import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 import maya.mel as mel
 
 import scriptsmenu
 
 
-def toshelf(action):
+def to_shelf(action):
     """
     Copy clicked menu item to the currently active Maya shelf 
 
@@ -31,27 +29,30 @@ def toshelf(action):
                      imageOverlayLabel=action.label or '')
 
 
-def _getmayamenubar():
+def _maya_main_window():
+    """Return Maya's main window"""
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if obj.objectName() == 'MayaWindow':
+            return obj
+    raise RuntimeError('Could not find MayaWindow instance')
+
+
+def _maya_main_menubar():
     """Retrieve the main menubar of the Maya window"""
-    parent = omui.MQtUtil.mainWindow()
-    if not parent:
-        raise AttributeError("Could not find instance of the Maya Main window")
-
-    shiboken_inst = shiboken.wrapInstance(long(parent), QtGui.QWidget)
-
-    mayawindow_children = shiboken_inst.children()
-    menubar = [i for i in mayawindow_children if isinstance(i, QtGui.QMenuBar)]
+    mayawindow = _maya_main_window()
+    menubar = [i for i in mayawindow.children() if isinstance(i, QtGui.QMenuBar)]
 
     assert len(menubar) == 1, "Error, could not find menu bar!"
     return menubar[0]
 
 
-def main(configuration, title):
-    mayamainbar = _getmayamenubar()
-    menu = scriptsmenu.ScriptsMenu(configuration,
-                                   title=title,
+def main(title="Scripts"):
+    mayamainbar = _maya_main_menubar()
+    menu = scriptsmenu.ScriptsMenu(title=title,
                                    parent=mayamainbar)
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
-    menu.register_callback(modifiers, toshelf)
+    menu.register_callback(modifiers, to_shelf)
+
+    return menu

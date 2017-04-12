@@ -1,17 +1,17 @@
 # scriptsmenu
 
-###  Configurable scripts menu with search field in Qt
+###  Searchable scripts menu with search field in Qt
 
-A simple menu which is generate based on a configuration file.
-The user can search for the actions based on keywords.
+Scriptsmenu will help you to easily organize your scripts into a
+customizable menu that users can quickly browse and search.
 
 <br>
 
 #### Features
-- Vast implementation possibilities through the use of Qt
-- Easily maintain a collection of scripts within a studio
-- Update menu without restarting application
-- Supports use of relative paths
+- Built with [Qt.py](https://github.com/mottosso/Qt.py)
+- Searchable menu for your scripts and tools (using _tags_)
+- Update your scripts menu without restarting application
+- Supports use of [relative paths for scripts](#relative_paths)
 
 <br>
 
@@ -23,17 +23,22 @@ To install download this package and place it on your `PYTHONPATH`.
 
 #### Usage
 
-To build a menu you'll need to set up a configuration `.json` file that houses the menu structure
-and links the menu items to specific scripts.
-
-An example can be found in `samples/sample_configuration_a.json`
+To build a simple menu of searchable scripts
 
 ```python
-configuration = "path/to/configuration.json"
-script_menu = ScriptsMenu(configuration,
-                          title="Scripts",
-                          parent=None)
-scripts_menu.show()
+from scriptsmenu import ScriptsMenu
+
+menu = ScriptsMenu(title="Scripts",
+                   parent=None)
+menu.add_script(parent=menu,
+                title="Script A",
+                command="print('A')",
+                tags=["foobar", "nugget"])
+menu.add_script(parent=menu,
+                title="Script B",
+                command="print('B')",
+                tags=["gold", "silver", "bronze"])
+menu.show()
 ```
 
 ##### Example usage in Autodesk Maya
@@ -50,9 +55,9 @@ To show the menu in Maya:
 ```python
 import scriptsmenu.launchformaya as launchformaya
 
-configuration = "path/to/configuration.json"
-launchformaya.main(configuration,
-                   title="My Scripts")
+menu = launchformaya.main(title="My Scripts")
+
+# continue to populate the menu here
 ```
 
 This will automatically parent it to Maya's main menu bar.
@@ -64,9 +69,7 @@ import maya.utils
 import scriptsmenu.launchformaya as launchformaya
 
 def build_menu():
-    configuration = "path/to/configuration.json"
-    launchformaya.main(configuration,
-                       title="My Scripts")
+    menu = launchformaya.main(title="My Scripts")
 
 maya.utils.executeDeferred(build_menu)
 ```
@@ -76,7 +79,7 @@ maya.utils.executeDeferred(build_menu)
 ### Advanced
 
 
-#### Relative paths
+#### Relative paths<a name="relative_paths"></a>
 
 To use relative paths in your scripts and icons you can use environment variables. Ensure the
 environment variable is set correctly and use it in the paths, like `$YOUR_ENV_VARIABLE`.
@@ -91,7 +94,7 @@ behavior when a menu item is clicked with _Control + Shift_ held at the same tim
 
 ```python
 from Qt import QtCore
-from scriptsmenu.scriptsmenu import ScriptsMenu
+from scriptsmenu import ScriptsMenu
 
 def callback(action):
     """This will print a message prior to running the action"""

@@ -1,23 +1,26 @@
-# example to intergrate in maya main menubar
 import os
-import site
+import sys
+
+from Qt import QtWidgets, QtGui
+
+from scriptsmenu import ScriptsMenu
+from scriptsmenu.scriptsmenu import (
+    _load_configuration,
+    load_from_configuration
+)
 
 # set the example evironment variable
 os.environ["SCRIPTMENU"] = os.path.dirname(__file__)
-config = os.path.expandvars(r"$SCRIPTMENU\\sample_configuration_a.json")
+config = os.path.expandvars(r"$SCRIPTMENU/sample_configuration_a.json")
+config = _load_configuration(config)    # parse the .json file
 
-# add the scriptmenu python folder
-python_folder = os.path.join(os.path.dirname(__file__), '..', 'python')
-site.addsitedir(os.path.abspath(python_folder))
+app = QtWidgets.QApplication(sys.argv)
 
+menu = ScriptsMenu(title="Scripts", parent=None)
 
-def example_maya_integration():
-    import scriptsmenu.launchformaya as launchformaya
-    launchformaya.main(config, "Example Scripts")
+# populate the menu using the configuration JSON file.
+load_from_configuration(menu, config)
 
+menu.exec_(QtGui.QCursor.pos())
 
-# example of custom intergration
-def launchforother():
-    import scriptsmenu.scriptsmenu as scriptsmenu
-    parent = None
-    scriptsmenu.main(config, parent)
+app.exec_()

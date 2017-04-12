@@ -15,7 +15,7 @@
     },
     {"title": "Launch script A",
       "tooltip": "Test launcher",
-      "command": "C:\\Users\\User\\Documents\\development\\scriptsmenu\\python\\scriptsmenu\\samples\\script_a.py",
+      "command": "$SCRIPTMENU/script_a.py",
       "type": "file",
       "taglist": ["test", "script", "launch"]
     }

@@ -1,15 +1,15 @@
 import os
-from PySide import QtGui
+from Qt import QtGui, QtWidgets
 
 
-class Action(QtGui.QAction):
+class Action(QtWidgets.QAction):
 
     def __init__(self, parent=None):
 
-        QtGui.QAction.__init__(self, parent)
+        QtWidgets.QAction.__init__(self, parent)
 
         self._root = None
-        self._taglist = None
+        self._tags = list()
         self._command = None
         self._sourcetype = None
         self._iconfile = None
@@ -24,12 +24,12 @@ class Action(QtGui.QAction):
         self._root = value
 
     @property
-    def taglist(self):
-        return self._taglist
+    def tags(self):
+        return self._tags
 
-    @taglist.setter
-    def taglist(self, value):
-        self._taglist = value
+    @tags.setter
+    def tags(self, value):
+        self._tags = value
 
     @property
     def command(self):
@@ -100,7 +100,7 @@ class Action(QtGui.QAction):
         """
 
         # get the current application and its linked keyboard modifiers
-        app = QtGui.QApplication.instance()
+        app = QtWidgets.QApplication.instance()
         modifiers = app.keyboardModifiers()
 
         # If the menu has a callback registered for the current modifier
@@ -147,3 +147,24 @@ class Action(QtGui.QAction):
                 string = os.path.normpath(os.path.expandvars(self._command))
 
             return 'execfile("{}")'.format(string)
+
+    def has_tag(self, tag):
+        """Check whether the tag matches with the action's tags.
+        
+        A partial match will also return True, for example tag `a` will match
+        correctly with the `ape` tag on the Action.
+
+        :param tag: The tag
+        :type tag: str
+        
+        :rtype: bool
+        :returns: Whether the action is tagged with given tag
+        
+        """
+
+        for tagitem in self.tags:
+            if tag not in tagitem:
+                continue
+            return True
+
+        return False
