@@ -191,10 +191,6 @@ def load_from_configuration(scriptsmenu, configuration):
                 scriptsmenu.addSeparator()
                 continue
 
-            # backwards compatibility
-            script["tags"] = script.pop("taglist", None)
-            script["sourcetype"] = script.pop("type", None)
-
             scriptsmenu.add_script(parent=parent_menu, **script)
 
 
