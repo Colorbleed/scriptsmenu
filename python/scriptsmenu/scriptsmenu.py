@@ -83,7 +83,7 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         assert tags is None or isinstance(tags, (list, tuple))
         tags = list() if tags is None else list(tags)
-        tags.append(title)
+        tags.append(title.lower())
 
         assert icon is None or isinstance(icon, basestring)
 
