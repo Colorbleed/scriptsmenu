@@ -1,4 +1,4 @@
-from Qt import QtGui, QtCore, QtWidgets
+from .vendor.Qt import QtGui, QtCore, QtWidgets
 
 import maya.cmds as cmds
 import maya.mel as mel

@@ -2,7 +2,7 @@ import os
 import json
 from collections import OrderedDict
 
-from Qt import QtGui, QtWidgets
+from .vendor.Qt import QtGui, QtWidgets
 
 from . import action
 
