@@ -9,7 +9,7 @@ from . import action
 class ScriptsMenu(QtWidgets.QMenu):
     """A Qt menu that displays a list of searchable actions"""
 
-    updated = QtCore.Signal()
+    updated = QtCore.Signal(QtWidgets.QMenu)
 
     def __init__(self, *args, **kwargs):
         """
@@ -176,10 +176,16 @@ class ScriptsMenu(QtWidgets.QMenu):
     def set_update_visible(self, state):
         self.update_action.setVisible(state)
 
-    def connect_update_function(self, func):
-        if not callable(func):
-            raise AttributeError("Provided function is not callable")
-        self.update_action.triggered.connect(func)
+    def clear_menu(self):
+        """
+        Clear all menu items which are not default
+        :return: 
+        """
+
+        # TODO: Set up a more robust implementation for this
+        # Delete all except the first three actions
+        for action in self.actions()[3:]:
+            self.removeAction(action)
 
     def register_callback(self, modifiers, callback):
         self._callbacks[int(modifiers)] = callback
