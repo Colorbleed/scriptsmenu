@@ -1,6 +1,6 @@
 import os
 
-from .vendor.Qt import QtGui, QtWidgets
+from .vendor.Qt import QtWidgets
 
 
 class Action(QtWidgets.QAction):
