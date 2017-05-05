@@ -1,53 +1,109 @@
-### Configurable scripts menu with search field in Qt
-A simple menu which is generate based on a configuration file.
-The user can search for the actions based on keywords.
+# scriptsmenu
+
+###  Searchable scripts menu with search field in Qt
+
+Scriptsmenu will help you to easily organize your scripts into a
+customizable menu that users can quickly browse and search.
 
 <br>
 
 #### Features
-- Vast implementation possibilities through the use of Qt
-- Easily maintain a collection of scripts within a studio
-- Update menu without restarting application
-- Supports use of relative paths
+- Built with [Qt.py](https://github.com/mottosso/Qt.py)
+- Searchable menu for your scripts and tools (using _tags_)
+- Update your scripts menu without restarting application
+- Supports use of [relative paths for scripts](#relative_paths)
 
 <br>
 
 #### Installation
-To install download this package and place it in a directory where Maya can find it.
+
+To install download this package and place it on your `PYTHONPATH`.
 
 <br>
 
 #### Usage
 
-To ensure the menu is complete with the correct submenus and actions you will need to set up a configuration 
-in a .json file ( example : samples/sample_configuration.json ) The key is the department name, the value is 
-a list of dictionaries which are the actions linked to the department.
-
-##### Relative paths
-
-Please check the samples folder of this package for an example python file which can be run.
-
-To ensure the scripts and icons are relative to an environment variable make sure the paths of the scripts
-and icons are led by the $YOUR_ENV_VARIABLE and ensure that environment variable is set to the  path in 
-which the scripts and icons are located.
-
-To show menu in Maya:
+To build a simple menu of searchable scripts
 
 ```python
-import os
-import scriptsmenu.launchformaya as launchformaya
+from scriptsmenu import ScriptsMenu
 
-configuration = os.path.expandvars('path_to_configuration\\configuration.json')
-launchformaya.main(configuration, "My Scripts")
+menu = ScriptsMenu(title="Scripts",
+                   parent=None)
+menu.add_script(parent=menu,
+                title="Script A",
+                command="print('A')",
+                tags=["foobar", "nugget"])
+menu.add_script(parent=menu,
+                title="Script B",
+                command="print('B')",
+                tags=["gold", "silver", "bronze"])
+menu.show()
 ```
 
-To show at launch in Maya ensure the code is pasted in the in the usersetup.py of the Maya which is launched
+##### Example usage in Autodesk Maya
+
+To parent the scripts menu to an application you'll need a parent Qt widget from the host application.
+You can pass this parent as parent to the `ScriptMenu(parent=parent)`.
+
+Additionally if you want to alter the behavior when clicking a menu item with specific modifier buttons held (e.g. Control + Shift) you can register a callback. See the _Register callback_ example under _Advanced_ below.
+
+An example for Autodesk Maya can be found in `launchformaya.py`
+
+To show the menu in Maya:
+
+```python
+import scriptsmenu.launchformaya as launchformaya
+
+menu = launchformaya.main(title="My Scripts")
+
+# continue to populate the menu here
+```
+
+This will automatically parent it to Maya's main menu bar.
+
+To show the menu at Maya launch you can add code to your `userSetup.py`. This code will need to be executed deferred to ensure it runs when Maya main menu bar already exist. For example:
+
+```python
+import maya.utils
+import scriptsmenu.launchformaya as launchformaya
+
+def build_menu():
+    menu = launchformaya.main(title="My Scripts")
+
+maya.utils.executeDeferred(build_menu)
+```
 
 <br>
 
-#### Advanced
+### Advanced
 
-To ensure the menu can be used in other packages besides Maya it recommended to create a separate launcher file (py)
-which checks for the parent to hook the menu to.
-The action which is triggered when clicked in the menu will also need to adjusted in order to process the commands
-to match the package
+
+#### Relative paths<a name="relative_paths"></a>
+
+To use relative paths in your scripts and icons you can use environment variables. Ensure the
+environment variable is set correctly and use it in the paths, like `$YOUR_ENV_VARIABLE`.
+
+A relative path for example could be set as `$SCRIPTS/relative/path/to/script.py`
+An example of this can be found in the samples folder of this package.
+
+#### Register callback
+
+You can override the callback behavior per modifier state. For example when you want special
+behavior when a menu item is clicked with _Control + Shift_ held at the same time.
+
+```python
+from Qt import QtCore
+from scriptsmenu import ScriptsMenu
+
+def callback(action):
+    """This will print a message prior to running the action"""
+    print("Triggered with Control + Shift")
+    action.run_command()
+
+# Control + Shift
+modifier = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
+
+menu = ScriptsMenu()
+menu.register_callback(modifier, callback)
+```
