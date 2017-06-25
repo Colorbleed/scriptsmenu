@@ -1,5 +1,5 @@
 import scriptsmenu
-from dependencies.Qt import QtCore, QtWidgets
+from dependencies.Qt import QtWidgets
 
 
 def _nuke_main_window():
@@ -17,12 +17,17 @@ def _nuke_main_menubar():
 
 
 def main(title="Scripts"):
-    nuke_main_bar = _nuke_main_menubar()
-    menu = scriptsmenu.ScriptsMenu(title=title,
-                                   parent=nuke_main_bar)
-
     # Register control + shift callback to add to shelf (Nuke behavior)
-    modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
+    # modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
     # menu.register_callback(modifiers, to_shelf)
+    nuke_main_bar = _nuke_main_menubar()
+    print nuke_main_bar
+    for nuke_bar in nuke_main_bar.children():
+        if isinstance(nuke_bar, scriptsmenu.ScriptsMenu):
+            if nuke_bar.title() == title:
+                print nuke_bar.title()
+                menu = nuke_bar
+                return menu
 
+    menu = scriptsmenu.ScriptsMenu(title=title, parent=nuke_main_bar)
     return menu
