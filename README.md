@@ -97,6 +97,8 @@ menu.add_script(parent=menu,
                 sourcetype='',
                 tags=["gold", "silver", "bronze"])
 
+```
+
 <br>
 
 ### Advanced
