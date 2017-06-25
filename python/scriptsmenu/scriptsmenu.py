@@ -1,9 +1,8 @@
-import os
 import json
+import os
 from collections import OrderedDict
 
-from Qt import QtGui, QtWidgets
-
+from dependencies.Qt import QtGui, QtWidgets
 from . import action
 
 
@@ -29,7 +28,7 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         # add default items in the menu
         self.create_default_items()
-        
+
         # Automatically add it to the parent menu
         parent = kwargs.get("parent", None)
         if parent:
@@ -78,7 +77,7 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         return menu
 
-    def add_script(self, parent, title, command, sourcetype,
+    def add_script(self, parent, title, command, sourcetype=None,
                    icon=None, tags=None, label=None, tooltip=None):
 
         assert tags is None or isinstance(tags, (list, tuple))
@@ -153,7 +152,6 @@ class ScriptsMenu(QtWidgets.QMenu):
 
 
 def _load_configuration(path):
-
     if not os.path.isfile(path):
         raise AttributeError("Given configuration is not "
                              "a file!\n'{}'".format(path))

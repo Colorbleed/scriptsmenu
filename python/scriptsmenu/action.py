@@ -1,9 +1,9 @@
 import os
-from Qt import QtGui, QtWidgets
+
+from dependencies.Qt import QtWidgets
 
 
 class Action(QtWidgets.QAction):
-
     def __init__(self, parent=None):
 
         QtWidgets.QAction.__init__(self, parent)
@@ -111,7 +111,7 @@ class Action(QtWidgets.QAction):
             callback(self)
             return
 
-        exec(self.process_command())
+        exec (self.process_command())
 
     def process_command(self):
         """
