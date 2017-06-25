@@ -1,5 +1,5 @@
 import scriptsmenu
-from dependencies.Qt import QtWidgets
+from .vendor.Qt import QtWidgets
 
 
 def _nuke_main_window():
