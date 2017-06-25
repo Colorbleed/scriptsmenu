@@ -57,11 +57,11 @@ Documentation
 
 """
 
-import importlib
 import os
-import shutil
 import sys
 import types
+import shutil
+import importlib
 
 __version__ = "1.0.0.b3"
 
@@ -76,9 +76,7 @@ QT_SIP_API_HINT = os.getenv("QT_SIP_API_HINT")
 # Reference to Qt.py
 Qt = sys.modules[__name__]
 Qt.QtCompat = types.ModuleType("QtCompat")
-Qt.QtGui = None
-Qt.QtWidgets = None
-Qt.QtCore = None
+
 """Common members of all bindings
 
 This is where each member of Qt.py is explicitly defined.
@@ -88,6 +86,7 @@ including members found in each of the 4 bindings.
 Find or add excluded members in build_membership.py
 
 """
+
 _common_members = {
     "QtGui": [
         "QAbstractTextDocumentLayout",
@@ -1012,6 +1011,7 @@ def _install():
 
 
 _install()
+
 
 """Augment QtCompat
 

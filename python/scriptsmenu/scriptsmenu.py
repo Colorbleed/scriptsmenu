@@ -1,13 +1,15 @@
-import json
 import os
+import json
 from collections import OrderedDict
 
-from dependencies.Qt import QtGui, QtWidgets
+from .vendor.Qt import QtWidgets, QtCore
 from . import action
 
 
 class ScriptsMenu(QtWidgets.QMenu):
     """A Qt menu that displays a list of searchable actions"""
+
+    updated = QtCore.Signal(QtWidgets.QMenu)
 
     def __init__(self, *args, **kwargs):
         """
@@ -34,6 +36,9 @@ class ScriptsMenu(QtWidgets.QMenu):
         if parent:
             parent.addMenu(self)
 
+    def on_update(self):
+        self.updated.emit(self)
+
     @property
     def registered_callbacks(self):
         return self._callbacks.copy()
@@ -55,20 +60,32 @@ class ScriptsMenu(QtWidgets.QMenu):
         searchbar_action.setObjectName("Searchbar")
 
         # add update button and link function
-        # update_action = QtWidgets.QAction(self)
-        # update_action.setObjectName("Update Scripts")
-        # update_action.setText("Update Scripts")
-        # update_action.triggered.connect(self.update_menu)
+        self.update_action = QtWidgets.QAction(self)
+        self.update_action.setObjectName("Update Scripts")
+        self.update_action.setText("Update Scripts")
+        self.update_action.setVisible(False)
+        self.update_action.triggered.connect(self.on_update)
 
         # add action to menu
         self.addAction(searchbar_action)
-        # self.addAction(update_action)
+        self.addAction(self.update_action)
 
         # add separator object
         separator = self.addSeparator()
         separator.setObjectName("separator")
 
     def add_menu(self, parent, title):
+        """
+        Create a sub menu for a parent widget
+
+        :param parent: the object to parent the menu to
+        :type parent: QtWidgets.QWidget
+
+        :param title: the title of the menu
+        :type title: str
+
+        :return:
+        """
 
         menu = QtWidgets.QMenu(parent, title)
         menu.setTitle(title)
@@ -77,8 +94,39 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         return menu
 
-    def add_script(self, parent, title, command, sourcetype=None,
-                   icon=None, tags=None, label=None, tooltip=None):
+    def add_script(self, parent, title, command, sourcetype, icon=None,
+                   tags=None, label=None, tooltip=None):
+        """
+        Create a clickable menu item which runs a script when clicked
+
+        :param parent: The widget to parent the item to
+        :type parent: QtWidget.QWidget
+
+        :param title: The text which will be displayed in the menu
+        :type title: str
+
+        :param command: The command which needs to be run when the item is
+        clicked.
+        :type command: str
+
+        :param sourcetype: The type of command, the way the command is
+        processed is based on the source type.
+        :type sourcetype: str
+
+        :param icon: The file path of an icon to display with the menu item
+        :type icon: str
+
+        :param tags: Keywords which describe a the actions of a scripts
+        :type tags: (list, tuple)
+
+        :param label: A short description of the script which will be displayed
+        when hovering over the menu item
+
+        :param tooltip: A tip for the user about the usage fo the tool
+        :type tooltip: str
+
+        :return: an instance of QtWidget.QAction
+        """
 
         assert tags is None or isinstance(tags, (list, tuple))
         tags = list() if tags is None else list(tags)
@@ -102,12 +150,13 @@ class ScriptsMenu(QtWidgets.QMenu):
         try:
             script_action.process_command()
         except RuntimeError as e:
-            raise RuntimeError("Script action can't be validly processed: {0}".format(e))
+            raise RuntimeError("Script action can't be "
+                               "processed: {}".format(e))
 
         if icon:
             iconfile = os.path.expandvars(icon)
             script_action.iconfile = iconfile
-            script_action_icon = QtGui.QIcon(iconfile)
+            script_action_icon = QtWidgets.QIcon(iconfile)
             script_action.setIcon(script_action_icon)
 
         if label:
@@ -123,6 +172,20 @@ class ScriptsMenu(QtWidgets.QMenu):
         self._script_actions.append(script_action)
 
         return script_action
+
+    def set_update_visible(self, state):
+        self.update_action.setVisible(state)
+
+    def clear_menu(self):
+        """
+        Clear all menu items which are not default
+        :return:
+        """
+
+        # TODO: Set up a more robust implementation for this
+        # Delete all except the first three actions
+        for action in self.actions()[3:]:
+            self.removeAction(action)
 
     def register_callback(self, modifiers, callback):
         self._callbacks[int(modifiers)] = callback
@@ -152,6 +215,7 @@ class ScriptsMenu(QtWidgets.QMenu):
 
 
 def _load_configuration(path):
+
     if not os.path.isfile(path):
         raise AttributeError("Given configuration is not "
                              "a file!\n'{}'".format(path))

@@ -1,4 +1,4 @@
-from dependencies.Qt import QtGui, QtCore, QtWidgets
+from .vendor.Qt import QtGui, QtCore, QtWidgets
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -31,7 +31,7 @@ def to_shelf(action):
 
 def _maya_main_window():
     """Return Maya's main window"""
-    for obj in QtWidgets.qApp.topLevelWidgets():
+    for obj in QtWidgets.QApplication.topLevelWidgets():
         if obj.objectName() == 'MayaWindow':
             return obj
     raise RuntimeError('Could not find MayaWindow instance')
@@ -40,7 +40,7 @@ def _maya_main_window():
 def _maya_main_menubar():
     """Retrieve the main menubar of the Maya window"""
     mayawindow = _maya_main_window()
-    menubar = [i for i in mayawindow.children() if isinstance(i, QtGui.QMenuBar)]
+    menubar = [i for i in mayawindow.children() if isinstance(i, QtWidgets.QMenuBar)]
 
     assert len(menubar) == 1, "Error, could not find menu bar!"
     return menubar[0]
