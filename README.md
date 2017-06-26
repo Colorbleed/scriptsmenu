@@ -88,13 +88,13 @@ menu = launchfornuke.main(title="My Scripts")
 menu.add_script(parent=menu,
                 title="Script A",
                 command="print('A')",
-                sourcetype='',
+                sourcetype='python',
                 tags=["foobar", "nugget"])
 
 menu.add_script(parent=menu,
                 title="Script B",
                 command="print('B')",
-                sourcetype='',
+                sourcetype='python',
                 tags=["gold", "silver", "bronze"])
 
 ```
