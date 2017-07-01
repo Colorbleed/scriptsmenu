@@ -4,12 +4,16 @@ from .vendor.Qt import QtWidgets
 
 def _nuke_main_window():
     """Return Nuke's main window"""
-    return QtWidgets.QApplication.activeWindow()
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if (obj.inherits('QMainWindow') and
+                    obj.metaObject().className() == 'Foundry::UI::DockMainWindow'):
+            return obj
+        raise RuntimeError('Could not find Nuke MainWindow instance')
 
 
 def _nuke_main_menubar():
     """Retrieve the main menubar of the Nuke window"""
-    nuke_window = QtWidgets.QApplication.activeWindow()
+    nuke_window = _nuke_main_window()
     menubar = [i for i in nuke_window.children() if isinstance(i, QtWidgets.QMenuBar)]
 
     assert len(menubar) == 1, "Error, could not find menu bar!"
