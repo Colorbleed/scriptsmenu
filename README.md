@@ -33,10 +33,12 @@ menu = ScriptsMenu(title="Scripts",
 menu.add_script(parent=menu,
                 title="Script A",
                 command="print('A')",
+                sourcetype='',
                 tags=["foobar", "nugget"])
 menu.add_script(parent=menu,
                 title="Script B",
                 command="print('B')",
+                sourcetype='',
                 tags=["gold", "silver", "bronze"])
 menu.show()
 ```
@@ -74,6 +76,29 @@ def build_menu():
 maya.utils.executeDeferred(build_menu)
 ```
 
+An example for The Foundry Nuke can be found in `launchfornuke.py`
+
+To show the menu in Nuke:
+
+```python
+import scriptsmenu.launchfornuke as launchfornuke
+
+menu = launchfornuke.main(title="My Scripts")
+
+menu.add_script(parent=menu,
+                title="Script A",
+                command="print('A')",
+                sourcetype='python',
+                tags=["foobar", "nugget"])
+
+menu.add_script(parent=menu,
+                title="Script B",
+                command="print('B')",
+                sourcetype='python',
+                tags=["gold", "silver", "bronze"])
+
+```
+
 <br>
 
 ### Advanced
@@ -106,4 +131,31 @@ modifier = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
 
 menu = ScriptsMenu()
 menu.register_callback(modifier, callback)
+```
+
+#### Update menu
+
+The ScriptsMenu has a signal called "updated" which can be connected to a function which
+rebuilds the menu
+
+```python
+# This example is tested in Autodesk Maya
+import scriptsmenu.launchformaya as launchformaya
+
+# Here we create our own menu without any scripts
+menu = launchformaya.main(title="Custom Menu")
+
+# Set the update button visible, which is hidden by default
+menu.set_update_visible(True)
+
+# Add a custom script to the menu
+menu.add_script(parent=menu, title="Before", command='print("C")', sourcetype="python")
+
+# Create update function
+def update(menu):
+    menu.clear_menu()
+    menu.add_script(parent=menu, title="After", command='print("C")', sourcetype="python")
+
+# Link the update function to the update signal
+menu.updated.connect(update)
 ```
