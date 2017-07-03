@@ -4,7 +4,7 @@ from .vendor.Qt import QtWidgets
 
 def _nuke_main_window():
     """Return Nuke's main window"""
-    for obj in QtWidgets.qApp.topLevelWidgets():
+    for obj in QtWidgets.QApplication.topLevelWidgets():
         if (obj.inherits('QMainWindow') and
                     obj.metaObject().className() == 'Foundry::UI::DockMainWindow'):
             return obj
