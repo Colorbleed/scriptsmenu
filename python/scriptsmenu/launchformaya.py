@@ -40,16 +40,17 @@ def _maya_main_window():
 def _maya_main_menubar():
     """Retrieve the main menubar of the Maya window"""
     mayawindow = _maya_main_window()
-    menubar = [i for i in mayawindow.children() if isinstance(i, QtWidgets.QMenuBar)]
+    menubar = [i for i in mayawindow.children()
+               if isinstance(i, QtWidgets.QMenuBar)]
 
     assert len(menubar) == 1, "Error, could not find menu bar!"
     return menubar[0]
 
 
-def main(title="Scripts"):
-    mayamainbar = _maya_main_menubar()
-    menu = scriptsmenu.ScriptsMenu(title=title,
-                                   parent=mayamainbar)
+def main(title="Scripts", parent=None):
+
+    mayamainbar = parent or _maya_main_menubar()
+    menu = scriptsmenu.ScriptsMenu(title=title, parent=mayamainbar)
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
