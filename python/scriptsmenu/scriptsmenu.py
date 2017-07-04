@@ -13,7 +13,6 @@ class ScriptsMenu(QtWidgets.QMenu):
 
     def __init__(self, *args, **kwargs):
         """
-        
         :param title: the name of the root menu which will be created
         :type title: str
         
@@ -35,6 +34,10 @@ class ScriptsMenu(QtWidgets.QMenu):
         parent = kwargs.get("parent", None)
         if parent:
             parent.addMenu(self)
+
+        menuname = kwargs.get("title", "scripts")
+        self.setTitle(menuname.title())
+        self.setObjectName(menuname)
 
     def on_update(self):
         self.updated.emit(self)
@@ -214,7 +217,7 @@ class ScriptsMenu(QtWidgets.QMenu):
             action.setVisible(visible)
 
 
-def _load_configuration(path):
+def load_configuration(path):
 
     if not os.path.isfile(path):
         raise AttributeError("Given configuration is not "
@@ -244,7 +247,6 @@ def load_from_configuration(scriptsmenu, configuration):
     for menu_name, scripts in configuration.items():
 
         parent_menu = scriptsmenu.add_menu(parent=scriptsmenu, title=menu_name)
-
         for script in scripts:
             assert isinstance(script, dict)
 
