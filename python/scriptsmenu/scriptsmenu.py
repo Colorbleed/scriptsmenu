@@ -230,7 +230,16 @@ def load_configuration(path):
 
     # retrieve and store config
     with open(path, "r") as f:
-        configuration = OrderedDict(json.load(f))
+        data = json.load(f)
+        order = data.get("order", None)
+
+        if order is not None:
+            configuration = OrderedDict()
+            for key in order:
+                configuration[key] = data[key]
+        else:
+            configuration = data
+
         return configuration
 
 
