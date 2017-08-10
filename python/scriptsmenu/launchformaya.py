@@ -1,9 +1,13 @@
+import logging
 from .vendor.Qt import QtGui, QtCore, QtWidgets
 
 import maya.cmds as cmds
 import maya.mel as mel
 
 import scriptsmenu
+
+
+log = logging.getLogger(__name__)
 
 
 def to_shelf(action):
@@ -50,7 +54,12 @@ def _maya_main_menubar():
 def main(title="Scripts", parent=None):
 
     mayamainbar = parent or _maya_main_menubar()
-    menu = scriptsmenu.ScriptsMenu(title=title, parent=mayamainbar)
+    try:
+        log.info("Attempting to build menu ...")
+        menu = scriptsmenu.ScriptsMenu(title=title, parent=mayamainbar)
+    except Exception as e:
+        log.error(e)
+        return
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
