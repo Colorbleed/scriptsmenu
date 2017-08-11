@@ -21,7 +21,7 @@ import imp
 
 f, filepath, descr = imp.find_module("{module_name}", ["{dirname}"])
 module = imp.load_module("{module_name}", f, filepath, descr)
-module.main()
+module.{module_name}()
 """
 
     @property
@@ -188,6 +188,7 @@ module.main()
         """
 
         dirname = os.path.dirname(r"{}".format(filepath))
+        dirpath = dirname.replace("\\", "/")
         module_name = os.path.splitext(os.path.basename(filepath))[0]
 
-        return self._COMMAND.format(module_name=module_name, dirname=dirname)
+        return self._COMMAND.format(module_name=module_name, dirname=dirpath)
