@@ -1,9 +1,13 @@
-import os
 import json
+import logging
+import os
 from collections import OrderedDict
+
 
 from .vendor.Qt import QtWidgets, QtCore
 from . import action
+
+log = logging.getLogger(__name__)
 
 
 class ScriptsMenu(QtWidgets.QMenu):
@@ -13,7 +17,6 @@ class ScriptsMenu(QtWidgets.QMenu):
 
     def __init__(self, *args, **kwargs):
         """
-        
         :param title: the name of the root menu which will be created
         :type title: str
         
@@ -28,13 +31,18 @@ class ScriptsMenu(QtWidgets.QMenu):
         self._script_actions = []
         self._callbacks = {}
 
-        # add default items in the menu
-        self.create_default_items()
-
         # Automatically add it to the parent menu
         parent = kwargs.get("parent", None)
         if parent:
             parent.addMenu(self)
+
+        objectname = kwargs.get("objectName", "scripts")
+        title = kwargs.get("title", "Scripts")
+        self.setObjectName(objectname)
+        self.setTitle(title)
+
+        # add default items in the menu
+        self.create_default_items()
 
     def on_update(self):
         self.updated.emit(self)
@@ -90,6 +98,7 @@ class ScriptsMenu(QtWidgets.QMenu):
         menu = QtWidgets.QMenu(parent, title)
         menu.setTitle(title)
         menu.setObjectName(title)
+        menu.setTearOffEnabled(True)
         parent.addMenu(menu)
 
         return menu
@@ -214,7 +223,21 @@ class ScriptsMenu(QtWidgets.QMenu):
             action.setVisible(visible)
 
 
-def _load_configuration(path):
+def create_submenu(scriptsmenu, script, parent_menu, items):
+
+    title = script["title"]
+    submenu = scriptsmenu.add_menu(parent=parent_menu,
+                                   title=title)
+    for item in items:
+        assert isinstance(script, dict), "Configuration is wrong!"
+        if item['title'] == "separator":
+            submenu.addSeparator()
+            continue
+
+        scriptsmenu.add_script(parent=submenu, **item)
+
+
+def load_configuration(path):
 
     if not os.path.isfile(path):
         raise AttributeError("Given configuration is not "
@@ -227,7 +250,16 @@ def _load_configuration(path):
 
     # retrieve and store config
     with open(path, "r") as f:
-        configuration = OrderedDict(json.load(f))
+        data = json.load(f)
+        order = data.get("order", None)
+
+        if order is not None:
+            configuration = OrderedDict()
+            for key in order:
+                configuration[key] = data[key]
+        else:
+            configuration = data
+
         return configuration
 
 
@@ -236,23 +268,37 @@ def load_from_configuration(scriptsmenu, configuration):
     
     This creates all submenus from a configuration.json file.
 
-    :param configuration: A ScriptsMenu configuration dictionary
-    :type configuration: dict
-        
+    When the configuration holds the key `main` all scripts under `main` will
+    be added to the main menu first before adding the rest
+
+    Args:
+        scriptsmenu (QtGui.QMenu): menu instance
+        configuration (dict): A ScriptsMenu configuration dictionary
     """
 
-    for menu_name, scripts in configuration.items():
+    # todo: improve for-loop, too complex
 
-        parent_menu = scriptsmenu.add_menu(parent=scriptsmenu, title=menu_name)
+    for section, scripts in configuration.items():
+
+        if section == "main":
+            parent_menu = scriptsmenu
+        else:
+            parent_menu = scriptsmenu.add_menu(parent=scriptsmenu,
+                                               title=section)
 
         for script in scripts:
-            assert isinstance(script, dict)
-
+            assert isinstance(script, dict), "Configuration is wrong!"
             # Special behavior for separators
             if script['title'] == "separator":
+                print scriptsmenu.title()
                 scriptsmenu.addSeparator()
                 continue
 
+            # items should hold a collection of submenu items (dict)
+            items = script.get("items", None)
+            if items:
+                create_submenu(scriptsmenu, script, parent_menu, items)
+                continue
             scriptsmenu.add_script(parent=parent_menu, **script)
 
 

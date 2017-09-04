@@ -15,6 +15,14 @@ class Action(QtWidgets.QAction):
         self._iconfile = None
         self._label = None
 
+        self._COMMAND = """
+import imp
+
+f, filepath, descr = imp.find_module("{module_name}", ["{dirname}"])
+module = imp.load_module("{module_name}", f, filepath, descr)
+module.{module_name}()
+"""
+
     @property
     def root(self):
         return self._root
@@ -142,11 +150,13 @@ class Action(QtWidgets.QAction):
 
         if self._sourcetype == "file":
             if os.path.isabs(self._command):
-                string = os.path.normpath(self._command)
+                filepath = self._command
             else:
-                string = os.path.normpath(os.path.expandvars(self._command))
+                filepath = os.path.normpath(os.path.expandvars(self._command))
 
-            return 'execfile("{}")'.format(string)
+            command = self._wrap_filepath(filepath)
+
+            return command
 
     def has_tag(self, tag):
         """Check whether the tag matches with the action's tags.
@@ -168,3 +178,16 @@ class Action(QtWidgets.QAction):
             return True
 
         return False
+
+    def _wrap_filepath(self, filepath):
+        """
+        Create a wrapped string for the python command
+        :param filepath:
+        :return:
+        """
+
+        dirname = os.path.dirname(r"{}".format(filepath))
+        dirpath = dirname.replace("\\", "/")
+        module_name = os.path.splitext(os.path.basename(filepath))[0]
+
+        return self._COMMAND.format(module_name=module_name, dirname=dirpath)
