@@ -69,9 +69,12 @@ def _find_scripts_menu(title, parent):
             isinstance(i, scriptsmenu.ScriptsMenu)
             and i.title() == title]
 
-    assert len(menu) == 1, ("Multiple or no instance(s) of {} "
-                            "in menu bar".format(title))
-    return menu[0]
+    if menu:
+        assert len(menu) < 2, ("Multiple instances of menu '{}' "
+                                "in menu bar".format(title))
+        menu = menu[0]
+
+    return menu
 
 
 def main(title="Scripts", parent=None):
