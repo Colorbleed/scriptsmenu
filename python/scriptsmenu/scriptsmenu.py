@@ -85,14 +85,14 @@ class ScriptsMenu(QtWidgets.QMenu):
     def add_menu(self, parent, title):
         """
         Create a sub menu for a parent widget
-        
+
         :param parent: the object to parent the menu to
         :type parent: QtWidgets.QWidget
-        
+
         :param title: the title of the menu
         :type title: str
-        
-        :return: 
+
+        :return:
         """
 
         menu = QtWidgets.QMenu(parent, title)
@@ -107,33 +107,33 @@ class ScriptsMenu(QtWidgets.QMenu):
                    tags=None, label=None, tooltip=None):
         """
         Create a clickable menu item which runs a script when clicked
-        
+
         :param parent: The widget to parent the item to
         :type parent: QtWidget.QWidget
-        
+
         :param title: The text which will be displayed in the menu
         :type title: str
-        
-        :param command: The command which needs to be run when the item is 
+
+        :param command: The command which needs to be run when the item is
         clicked.
         :type command: str
-        
-        :param sourcetype: The type of command, the way the command is 
+
+        :param sourcetype: The type of command, the way the command is
         processed is based on the source type.
         :type sourcetype: str
-        
+
         :param icon: The file path of an icon to display with the menu item
         :type icon: str
-        
+
         :param tags: Keywords which describe a the actions of a scripts
         :type tags: (list, tuple)
-        
+
         :param label: A short description of the script which will be displayed
         when hovering over the menu item
-        
+
         :param tooltip: A tip for the user about the usage fo the tool
         :type tooltip: str
-        
+
         :return: an instance of QtWidget.QAction
         """
 
@@ -188,7 +188,7 @@ class ScriptsMenu(QtWidgets.QMenu):
     def clear_menu(self):
         """
         Clear all menu items which are not default
-        :return: 
+        :return:
         """
 
         # TODO: Set up a more robust implementation for this

@@ -1,10 +1,8 @@
-import logging
-from .vendor.Qt import QtGui, QtCore, QtWidgets
-
 import maya.cmds as cmds
 import maya.mel as mel
 
 import scriptsmenu
+from .vendor.Qt import QtCore, QtWidgets
 
 
 log = logging.getLogger(__name__)
