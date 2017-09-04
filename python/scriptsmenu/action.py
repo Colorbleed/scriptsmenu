@@ -4,7 +4,6 @@ from .vendor.Qt import QtWidgets
 
 
 class Action(QtWidgets.QAction):
-
     def __init__(self, parent=None):
 
         QtWidgets.QAction.__init__(self, parent)

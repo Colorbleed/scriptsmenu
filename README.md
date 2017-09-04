@@ -33,10 +33,12 @@ menu = ScriptsMenu(title="Scripts",
 menu.add_script(parent=menu,
                 title="Script A",
                 command="print('A')",
+                sourcetype='python',
                 tags=["foobar", "nugget"])
 menu.add_script(parent=menu,
                 title="Script B",
                 command="print('B')",
+                sourcetype='python',
                 tags=["gold", "silver", "bronze"])
 menu.show()
 ```
@@ -72,6 +74,29 @@ def build_menu():
     menu = launchformaya.main(title="My Scripts")
 
 maya.utils.executeDeferred(build_menu)
+```
+
+An example for The Foundry Nuke can be found in `launchfornuke.py`
+
+To show the menu in Nuke:
+
+```python
+import scriptsmenu.launchfornuke as launchfornuke
+
+menu = launchfornuke.main(title="My Scripts")
+
+menu.add_script(parent=menu,
+                title="Script A",
+                command="print('A')",
+                sourcetype='python',
+                tags=["foobar", "nugget"])
+
+menu.add_script(parent=menu,
+                title="Script B",
+                command="print('B')",
+                sourcetype='python',
+                tags=["gold", "silver", "bronze"])
+
 ```
 
 <br>
