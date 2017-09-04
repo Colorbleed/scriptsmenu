@@ -68,15 +68,15 @@ class ScriptsMenu(QtWidgets.QMenu):
         searchbar_action.setObjectName("Searchbar")
 
         # add update button and link function
-        self.update_action = QtWidgets.QAction(self)
-        self.update_action.setObjectName("Update Scripts")
-        self.update_action.setText("Update Scripts")
-        self.update_action.setVisible(False)
-        self.update_action.triggered.connect(self.on_update)
+        update_action = QtWidgets.QAction(self)
+        update_action.setObjectName("Update Scripts")
+        update_action.setText("Update Scripts")
+        update_action.setVisible(False)
+        update_action.triggered.connect(self.on_update)
 
         # add action to menu
         self.addAction(searchbar_action)
-        self.addAction(self.update_action)
+        self.addAction(update_action)
 
         # add separator object
         separator = self.addSeparator()
@@ -92,7 +92,7 @@ class ScriptsMenu(QtWidgets.QMenu):
         :param title: the title of the menu
         :type title: str
         
-        :return: 
+        :return: QtWidget.QMenu instance
         """
 
         menu = QtWidgets.QMenu(parent, title)
@@ -138,10 +138,12 @@ class ScriptsMenu(QtWidgets.QMenu):
         """
 
         assert tags is None or isinstance(tags, (list, tuple))
+        # Ensure tags is a list
         tags = list() if tags is None else list(tags)
         tags.append(title.lower())
 
-        assert icon is None or isinstance(icon, basestring)
+        assert icon is None or isinstance(icon, str), (
+            "Invalid data type for icon, supported : None, string")
 
         # create new action
         script_action = action.Action(parent)
@@ -188,13 +190,13 @@ class ScriptsMenu(QtWidgets.QMenu):
     def clear_menu(self):
         """
         Clear all menu items which are not default
-        :return: 
+        :return: None
         """
 
         # TODO: Set up a more robust implementation for this
         # Delete all except the first three actions
-        for action in self.actions()[3:]:
-            self.removeAction(action)
+        for _action in self.actions()[3:]:
+            self.removeAction(_action)
 
     def register_callback(self, modifiers, callback):
         self._callbacks[int(modifiers)] = callback
@@ -223,18 +225,17 @@ class ScriptsMenu(QtWidgets.QMenu):
             action.setVisible(visible)
 
 
-def create_submenu(scriptsmenu, script, parent_menu, items):
+def create_submenu(menu, script, parent, items):
 
     title = script["title"]
-    submenu = scriptsmenu.add_menu(parent=parent_menu,
-                                   title=title)
+    submenu = menu.add_menu(parent=parent, title=title)
     for item in items:
         assert isinstance(script, dict), "Configuration is wrong!"
         if item['title'] == "separator":
             submenu.addSeparator()
             continue
 
-        scriptsmenu.add_script(parent=submenu, **item)
+        menu.add_script(parent=submenu, **item)
 
 
 def load_configuration(path):
@@ -251,19 +252,20 @@ def load_configuration(path):
     # retrieve and store config
     with open(path, "r") as f:
         data = json.load(f)
-        order = data.get("order", None)
 
-        if order is not None:
-            configuration = OrderedDict()
-            for key in order:
-                configuration[key] = data[key]
-        else:
-            configuration = data
+    # check if configuration has an specific order
+    order = data.get("order", None)
+    if order is not None:
+        configuration = OrderedDict()
+        for key in order:
+            configuration[key] = data[key]
+    else:
+        configuration = data
 
-        return configuration
+    return configuration
 
 
-def load_from_configuration(scriptsmenu, configuration):
+def load_from_configuration(menu, configuration):
     """Process the configurations and store the configuration
     
     This creates all submenus from a configuration.json file.
@@ -272,7 +274,7 @@ def load_from_configuration(scriptsmenu, configuration):
     be added to the main menu first before adding the rest
 
     Args:
-        scriptsmenu (QtGui.QMenu): menu instance
+        menu (QtGui.QMenu): menu instance
         configuration (dict): A ScriptsMenu configuration dictionary
     """
 
@@ -281,25 +283,24 @@ def load_from_configuration(scriptsmenu, configuration):
     for section, scripts in configuration.items():
 
         if section == "main":
-            parent_menu = scriptsmenu
+            parent_menu = menu
         else:
-            parent_menu = scriptsmenu.add_menu(parent=scriptsmenu,
-                                               title=section)
+            parent_menu = menu.add_menu(parent=menu, title=section)
 
         for script in scripts:
             assert isinstance(script, dict), "Configuration is wrong!"
             # Special behavior for separators
             if script['title'] == "separator":
-                print scriptsmenu.title()
-                scriptsmenu.addSeparator()
+                menu.addSeparator()
                 continue
 
             # items should hold a collection of submenu items (dict)
             items = script.get("items", None)
             if items:
-                create_submenu(scriptsmenu, script, parent_menu, items)
+                create_submenu(menu, script, parent_menu, items)
                 continue
-            scriptsmenu.add_script(parent=parent_menu, **script)
+
+            menu.add_script(parent=parent_menu, **script)
 
 
 def application(configuration, parent):
