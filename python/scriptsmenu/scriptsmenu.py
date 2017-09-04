@@ -61,6 +61,7 @@ class ScriptsMenu(QtWidgets.QMenu):
         searchbar.setFixedWidth(120)
         searchbar.setPlaceholderText("Search ...")
         searchbar.textChanged.connect(self._update_search)
+        self.searchbar = searchbar
 
         # create widget holder
         searchbar_action = QtWidgets.QWidgetAction(self)
@@ -75,7 +76,6 @@ class ScriptsMenu(QtWidgets.QMenu):
         update_action.setText("Update Scripts")
         update_action.setVisible(False)
         update_action.triggered.connect(self.on_update)
-
         self.update_action = update_action
 
         # add action to menu
