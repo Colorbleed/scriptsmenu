@@ -1,3 +1,5 @@
+import logging
+
 import maya.cmds as cmds
 import maya.mel as mel
 
@@ -72,13 +74,17 @@ def _find_scripts_menu(title, parent):
     Check if the menu exists with the given title in the parent
 
     :param title: the title name of the scripts menu
-    :param parent: QtWidgets.QMenuBar
+    :type title: str
+
+    :param parent: the menubar to check
+    :type parent: QtWidgets.QMenuBar
 
     :return: QtWidgets.QMenu or None
     """
 
-    menu = [i for i in parent.children() if isinstance(i, QtWidgets.QMenu)
-            and _check_title(i) == title]
+    menu = [i for i in parent.children() if
+            isinstance(i, scriptsmenu.ScriptsMenu)
+            and i.title() == title]
 
     assert len(menu) < 2, "Multiple instances of {} in menu bar".format(title)
     if len(menu) == 1:
@@ -88,6 +94,16 @@ def _find_scripts_menu(title, parent):
 
 
 def main(title="Scripts", parent=None):
+    """Build the main scripts menu in Maya
+
+    :param title: name of the menu in the application
+    :type title: str
+
+    :param parent: the parent object for the menu
+    :type parent: QtWidgets.QtMenuBar
+
+    :return: scriptsmenu.ScriptsMenu instance
+    """
 
     mayamainbar = parent or _maya_main_menubar()
     try:
