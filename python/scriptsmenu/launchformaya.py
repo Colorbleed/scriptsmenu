@@ -30,7 +30,7 @@ def to_shelf(action):
                      parent=current_active_shelf,
                      image=action.iconfile or "pythonFamily.png",
                      annotation=action.statusTip(),
-                     imageOverlayLabel=action.label or '')
+                     imageOverlayLabel=action.label or "")
 
 
 def _maya_main_window():
@@ -50,23 +50,6 @@ def _maya_main_menubar():
     assert len(menubar) == 1, "Error, could not find menu bar!"
 
     return menubar[0]
-
-
-def _check_title(menu):
-    """Wrapped try and except to retrieve the name of the menu
-    :param menu: the menu to get the title from
-    :type menu: QtWidgets.QMenu instance
-
-    :return: title
-    """
-    title = None
-    try:
-        title = menu.title()
-    except Exception as e:
-        log.debug(e)
-        pass
-
-    return title
 
 
 def _find_scripts_menu(title, parent):
