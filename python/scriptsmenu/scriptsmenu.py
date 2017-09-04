@@ -28,6 +28,8 @@ class ScriptsMenu(QtWidgets.QMenu):
         QtWidgets.QMenu.__init__(self, *args, **kwargs)
 
         self.searchbar = None
+        self.update_action = None
+
         self._script_actions = []
         self._callbacks = {}
 
@@ -55,10 +57,10 @@ class ScriptsMenu(QtWidgets.QMenu):
         """Add a search bar to the top of the menu given"""
 
         # create widget and link function
-        self.searchbar = QtWidgets.QLineEdit()
-        self.searchbar.setFixedWidth(120)
-        self.searchbar.setPlaceholderText("Search ...")
-        self.searchbar.textChanged.connect(self._update_search)
+        searchbar = QtWidgets.QLineEdit()
+        searchbar.setFixedWidth(120)
+        searchbar.setPlaceholderText("Search ...")
+        searchbar.textChanged.connect(self._update_search)
 
         # create widget holder
         searchbar_action = QtWidgets.QWidgetAction(self)
@@ -73,6 +75,8 @@ class ScriptsMenu(QtWidgets.QMenu):
         update_action.setText("Update Scripts")
         update_action.setVisible(False)
         update_action.triggered.connect(self.on_update)
+
+        self.update_action = update_action
 
         # add action to menu
         self.addAction(searchbar_action)
