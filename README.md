@@ -107,7 +107,7 @@ The configuration of the menu is a list of dictionaries. The loader recognizes t
 * `menu`, a submenu for the main menu with its own actions
   * this is indicated with the key `"items"`
 * `action`, a script to run
-* `separator`, this is an aestatical option but can help with separating certain actions which belong
+* `separator`, this is an aesthetical option but can help with separating certain actions which belong
 to the same group.
 
 The order the items appear in the list dictates the order in which is will be created.
@@ -130,7 +130,7 @@ The order the items appear in the list dictates the order in which is will be cr
         "title": "Animation",
         "items":[
             {
-                "type": "action"
+                "type": "action",
                 "title": "Blendshapes UI",
                 "command": "$SCRIPTSFOLDER\\animation\\blendshapes_ui.py",
                 "sourcetype": "file",
