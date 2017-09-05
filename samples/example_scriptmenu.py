@@ -6,7 +6,7 @@ from Qt import QtWidgets, QtGui
 from scriptsmenu import ScriptsMenu
 from scriptsmenu.scriptsmenu import (
     load_configuration,
-    load_from_configuration
+    build_from_configuration
 )
 
 # set the example evironment variable
@@ -19,7 +19,7 @@ app = QtWidgets.QApplication(sys.argv)
 menu = ScriptsMenu(title="Scripts", parent=None)
 
 # populate the menu using the configuration JSON file.
-load_from_configuration(menu, config)
+menu.build_from_configuration(menu, config)
 
 menu.exec_(QtGui.QCursor.pos())
 
