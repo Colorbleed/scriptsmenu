@@ -190,7 +190,7 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         return script_action
 
-    def load_from_configuration(self, parent, configuration):
+    def build_from_configuration(self, parent, configuration):
         """Process the configurations and store the configuration
 
         This creates all submenus from a configuration.json file.
@@ -202,8 +202,6 @@ class ScriptsMenu(QtWidgets.QMenu):
             parent (ScriptsMenu): script menu instance
             configuration (list): A ScriptsMenu configuration list
         """
-
-        print "DEBUG : {}".format(parent.title())
 
         for item in configuration:
             assert isinstance(item, dict), "Configuration is wrong!"
@@ -224,7 +222,7 @@ class ScriptsMenu(QtWidgets.QMenu):
             elif item_type == "menu":
                 assert "items" in item, "Menu is missing 'items' key"
                 menu = self.add_menu(parent=parent, title=item["title"])
-                self.load_from_configuration(menu, item["items"])
+                self.build_from_configuration(menu, item["items"])
 
             # add script
             elif item_type == "action":
