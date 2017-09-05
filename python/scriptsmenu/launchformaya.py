@@ -52,7 +52,7 @@ def _maya_main_menubar():
     return menubar[0]
 
 
-def _find_scripts_menu(title, parent):
+def find_scripts_menu(title, parent):
     """
     Check if the menu exists with the given title in the parent
 
@@ -65,19 +65,20 @@ def _find_scripts_menu(title, parent):
     :return: QtWidgets.QMenu or None
     """
 
-    menu = [i for i in parent.children() if
-            isinstance(i, scriptsmenu.ScriptsMenu)
-            and i.title() == title]
+    menu = None
+    search = [i for i in parent.children() if
+              isinstance(i, scriptsmenu.ScriptsMenu)
+              and i.title() == title]
 
-    if menu:
-        assert len(menu) < 2, ("Multiple instances of menu '{}' "
-                                "in menu bar".format(title))
-        menu = menu[0]
+    if search:
+        assert len(search) < 2, ("Multiple instances of menu '{}' "
+                                 "in menu bar".format(title))
+        menu = search[0]
 
     return menu
 
 
-def main(title="Scripts", parent=None):
+def main(title="Scripts", parent=None, objectName=None):
     """Build the main scripts menu in Maya
 
     :param title: name of the menu in the application
@@ -92,10 +93,13 @@ def main(title="Scripts", parent=None):
     mayamainbar = parent or _maya_main_menubar()
     try:
         # check menu already exists
-        menu = _find_scripts_menu(title, mayamainbar)
+        menu = find_scripts_menu(title, mayamainbar)
         if not menu:
             log.info("Attempting to build menu ...")
-            menu = scriptsmenu.ScriptsMenu(title=title, parent=mayamainbar)
+            object_name = objectName or title.lower()
+            menu = scriptsmenu.ScriptsMenu(title=title,
+                                           parent=mayamainbar,
+                                           objectName=object_name)
     except Exception as e:
         log.error(e)
         return
