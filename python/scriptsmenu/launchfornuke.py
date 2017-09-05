@@ -14,7 +14,8 @@ def _nuke_main_window():
 def _nuke_main_menubar():
     """Retrieve the main menubar of the Nuke window"""
     nuke_window = _nuke_main_window()
-    menubar = [i for i in nuke_window.children() if isinstance(i, QtWidgets.QMenuBar)]
+    menubar = [i for i in nuke_window.children()
+               if isinstance(i, QtWidgets.QMenuBar)]
 
     assert len(menubar) == 1, "Error, could not find menu bar!"
     return menubar[0]
@@ -25,11 +26,9 @@ def main(title="Scripts"):
     # modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
     # menu.register_callback(modifiers, to_shelf)
     nuke_main_bar = _nuke_main_menubar()
-    print nuke_main_bar
     for nuke_bar in nuke_main_bar.children():
         if isinstance(nuke_bar, scriptsmenu.ScriptsMenu):
             if nuke_bar.title() == title:
-                print nuke_bar.title()
                 menu = nuke_bar
                 return menu
 

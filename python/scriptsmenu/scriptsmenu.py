@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from collections import OrderedDict
 
 
 from .vendor.Qt import QtWidgets, QtCore
@@ -28,6 +27,8 @@ class ScriptsMenu(QtWidgets.QMenu):
         QtWidgets.QMenu.__init__(self, *args, **kwargs)
 
         self.searchbar = None
+        self.update_action = None
+
         self._script_actions = []
         self._callbacks = {}
 
@@ -55,10 +56,11 @@ class ScriptsMenu(QtWidgets.QMenu):
         """Add a search bar to the top of the menu given"""
 
         # create widget and link function
-        self.searchbar = QtWidgets.QLineEdit()
-        self.searchbar.setFixedWidth(120)
-        self.searchbar.setPlaceholderText("Search ...")
-        self.searchbar.textChanged.connect(self._update_search)
+        searchbar = QtWidgets.QLineEdit()
+        searchbar.setFixedWidth(120)
+        searchbar.setPlaceholderText("Search ...")
+        searchbar.textChanged.connect(self._update_search)
+        self.searchbar = searchbar
 
         # create widget holder
         searchbar_action = QtWidgets.QWidgetAction(self)
@@ -68,21 +70,22 @@ class ScriptsMenu(QtWidgets.QMenu):
         searchbar_action.setObjectName("Searchbar")
 
         # add update button and link function
-        self.update_action = QtWidgets.QAction(self)
-        self.update_action.setObjectName("Update Scripts")
-        self.update_action.setText("Update Scripts")
-        self.update_action.setVisible(False)
-        self.update_action.triggered.connect(self.on_update)
+        update_action = QtWidgets.QAction(self)
+        update_action.setObjectName("Update Scripts")
+        update_action.setText("Update Scripts")
+        update_action.setVisible(False)
+        update_action.triggered.connect(self.on_update)
+        self.update_action = update_action
 
         # add action to menu
         self.addAction(searchbar_action)
-        self.addAction(self.update_action)
+        self.addAction(update_action)
 
         # add separator object
         separator = self.addSeparator()
         separator.setObjectName("separator")
 
-    def add_menu(self, parent, title):
+    def add_menu(self, title, parent=None):
         """
         Create a sub menu for a parent widget
 
@@ -91,9 +94,12 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         :param title: the title of the menu
         :type title: str
-
-        :return:
+        
+        :return: QtWidget.QMenu instance
         """
+
+        if not parent:
+            parent = self
 
         menu = QtWidgets.QMenu(parent, title)
         menu.setTitle(title)
@@ -138,10 +144,12 @@ class ScriptsMenu(QtWidgets.QMenu):
         """
 
         assert tags is None or isinstance(tags, (list, tuple))
+        # Ensure tags is a list
         tags = list() if tags is None else list(tags)
         tags.append(title.lower())
 
-        assert icon is None or isinstance(icon, basestring)
+        assert icon is None or isinstance(icon, str), (
+            "Invalid data type for icon, supported : None, string")
 
         # create new action
         script_action = action.Action(parent)
@@ -182,19 +190,62 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         return script_action
 
+    def build_from_configuration(self, parent, configuration):
+        """Process the configurations and store the configuration
+
+        This creates all submenus from a configuration.json file.
+
+        When the configuration holds the key `main` all scripts under `main` will
+        be added to the main menu first before adding the rest
+
+        Args:
+            parent (ScriptsMenu): script menu instance
+            configuration (list): A ScriptsMenu configuration list
+        """
+
+        for item in configuration:
+            assert isinstance(item, dict), "Configuration is wrong!"
+
+            # skip items which have no `type` key
+            item_type = item.get('type', None)
+            if not item_type:
+                log.warning("Missing 'type' from configuration item")
+                continue
+
+            # add separator
+            # Special behavior for separators
+            if item_type == "separator":
+                parent.addSeparator()
+
+            # add submenu
+            # items should hold a collection of submenu items (dict)
+            elif item_type == "menu":
+                assert "items" in item, "Menu is missing 'items' key"
+                menu = self.add_menu(parent=parent, title=item["title"])
+                self.build_from_configuration(menu, item["items"])
+
+            # add script
+            elif item_type == "action":
+                # filter out `type` from the item dict
+                config = {key: value for key, value in
+                          item.items() if key != "type"}
+
+                self.add_script(parent=parent, **config)
+
     def set_update_visible(self, state):
         self.update_action.setVisible(state)
 
     def clear_menu(self):
         """
         Clear all menu items which are not default
-        :return:
+
+        :return: None
         """
 
         # TODO: Set up a more robust implementation for this
         # Delete all except the first three actions
-        for action in self.actions()[3:]:
-            self.removeAction(action)
+        for _action in self.actions()[3:]:
+            self.removeAction(_action)
 
     def register_callback(self, modifiers, callback):
         self._callbacks[int(modifiers)] = callback
@@ -223,20 +274,6 @@ class ScriptsMenu(QtWidgets.QMenu):
             action.setVisible(visible)
 
 
-def create_submenu(scriptsmenu, script, parent_menu, items):
-
-    title = script["title"]
-    submenu = scriptsmenu.add_menu(parent=parent_menu,
-                                   title=title)
-    for item in items:
-        assert isinstance(script, dict), "Configuration is wrong!"
-        if item['title'] == "separator":
-            submenu.addSeparator()
-            continue
-
-        scriptsmenu.add_script(parent=submenu, **item)
-
-
 def load_configuration(path):
 
     if not os.path.isfile(path):
@@ -250,56 +287,9 @@ def load_configuration(path):
 
     # retrieve and store config
     with open(path, "r") as f:
-        data = json.load(f)
-        order = data.get("order", None)
+        configuration = json.load(f)
 
-        if order is not None:
-            configuration = OrderedDict()
-            for key in order:
-                configuration[key] = data[key]
-        else:
-            configuration = data
-
-        return configuration
-
-
-def load_from_configuration(scriptsmenu, configuration):
-    """Process the configurations and store the configuration
-    
-    This creates all submenus from a configuration.json file.
-
-    When the configuration holds the key `main` all scripts under `main` will
-    be added to the main menu first before adding the rest
-
-    Args:
-        scriptsmenu (QtGui.QMenu): menu instance
-        configuration (dict): A ScriptsMenu configuration dictionary
-    """
-
-    # todo: improve for-loop, too complex
-
-    for section, scripts in configuration.items():
-
-        if section == "main":
-            parent_menu = scriptsmenu
-        else:
-            parent_menu = scriptsmenu.add_menu(parent=scriptsmenu,
-                                               title=section)
-
-        for script in scripts:
-            assert isinstance(script, dict), "Configuration is wrong!"
-            # Special behavior for separators
-            if script['title'] == "separator":
-                print scriptsmenu.title()
-                scriptsmenu.addSeparator()
-                continue
-
-            # items should hold a collection of submenu items (dict)
-            items = script.get("items", None)
-            if items:
-                create_submenu(scriptsmenu, script, parent_menu, items)
-                continue
-            scriptsmenu.add_script(parent=parent_menu, **script)
+    return configuration
 
 
 def application(configuration, parent):
