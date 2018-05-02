@@ -17,6 +17,7 @@ def register_repeat_last(action):
 
     Returns:
         int: 0
+
     """
     command = action.process_command()
     command = command.replace("\n", "; ")
@@ -34,6 +35,7 @@ def to_shelf(action):
 
     Returns:
         int: 1
+
     """
 
     shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
@@ -49,6 +51,7 @@ def to_shelf(action):
                      imageOverlayLabel=action.label or "")
 
     return 1
+
 
 def _maya_main_window():
     """Return Maya's main window"""
@@ -73,13 +76,14 @@ def find_scripts_menu(title, parent):
     """
     Check if the menu exists with the given title in the parent
 
-    :param title: the title name of the scripts menu
-    :type title: str
+    Args:
+        title (str): the title name of the scripts menu
 
-    :param parent: the menubar to check
-    :type parent: QtWidgets.QMenuBar
+        parent (QtWidgets.QMenuBar): the menubar to check
 
-    :return: QtWidgets.QMenu or None
+    Returns:
+        QtWidgets.QMenu or None
+
     """
 
     menu = None
@@ -98,13 +102,16 @@ def find_scripts_menu(title, parent):
 def main(title="Scripts", parent=None, objectName=None):
     """Build the main scripts menu in Maya
 
-    :param title: name of the menu in the application
-    :type title: str
+    Args:
+        title (str): name of the menu in the application
 
-    :param parent: the parent object for the menu
-    :type parent: QtWidgets.QtMenuBar
+        parent (QtWidgets.QtMenuBar): the parent object for the menu
 
-    :return: scriptsmenu.ScriptsMenu instance
+        objectName (str): custom objectName for scripts menu
+
+    Returns:
+        scriptsmenu.ScriptsMenu instance
+
     """
 
     mayamainbar = parent or _maya_main_menubar()
