@@ -1,7 +1,7 @@
+import os
 import json
 import logging
-import os
-
+from collections import defaultdict
 
 from .vendor.Qt import QtWidgets, QtCore
 from . import action
@@ -30,7 +30,7 @@ class ScriptsMenu(QtWidgets.QMenu):
         self.update_action = None
 
         self._script_actions = []
-        self._callbacks = {}
+        self._callbacks = defaultdict(list)
 
         # Automatically add it to the parent menu
         parent = kwargs.get("parent", None)
@@ -88,7 +88,7 @@ class ScriptsMenu(QtWidgets.QMenu):
     def add_menu(self, title, parent=None):
         """
         Create a sub menu for a parent widget
-
+        Args:
         :param parent: the object to parent the menu to
         :type parent: QtWidgets.QWidget
 
@@ -248,7 +248,7 @@ class ScriptsMenu(QtWidgets.QMenu):
             self.removeAction(_action)
 
     def register_callback(self, modifiers, callback):
-        self._callbacks[int(modifiers)] = callback
+        self._callbacks[modifiers].append(callback)
 
     def _update_search(self, search):
         """Hide all the samples which do not match the user's import
