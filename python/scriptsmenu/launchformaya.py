@@ -6,18 +6,34 @@ import maya.mel as mel
 import scriptsmenu
 from .vendor.Qt import QtCore, QtWidgets
 
-
 log = logging.getLogger(__name__)
 
 
-def to_shelf(action):
+def register_repeat_last(action):
+    """Register the action in repeatLast to ensure the RepeatLast hotkey works
+
+    Args:
+        action (action.Action): Action wigdet instance
+
+    Returns:
+        int: 0
     """
-    Copy clicked menu item to the currently active Maya shelf 
+    command = action.process_command()
+    command = command.replace("\n", "; ")
+    # Register command to Maya (mel)
+    cmds.repeatLast(addCommand='python("{}")'.format(command),
+                    addCommandLabel=action.label)
 
-    :param action: the action instance which is clicked
-    :type action: QtGui.QAction
+    return 0
 
-    :return: None
+
+def to_shelf(action):
+    """Copy clicked menu item to the currently active Maya shelf
+    Args:
+        action (action.Action): the action instance which is clicked
+
+    Returns:
+        int: 1
     """
 
     shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
@@ -32,6 +48,7 @@ def to_shelf(action):
                      annotation=action.statusTip(),
                      imageOverlayLabel=action.label or "")
 
+    return 1
 
 def _maya_main_window():
     """Return Maya's main window"""
@@ -106,6 +123,8 @@ def main(title="Scripts", parent=None, objectName=None):
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
-    menu.register_callback(modifiers, to_shelf)
+    menu.register_callback(int(modifiers), to_shelf)
+
+    menu.register_callback(0, register_repeat_last)
 
     return menu
