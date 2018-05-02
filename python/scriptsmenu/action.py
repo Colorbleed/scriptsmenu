@@ -4,6 +4,8 @@ from .vendor.Qt import QtWidgets
 
 
 class Action(QtWidgets.QAction):
+    """Custom Action widget"""
+
     def __init__(self, parent=None):
 
         QtWidgets.QAction.__init__(self, parent)
@@ -15,13 +17,10 @@ class Action(QtWidgets.QAction):
         self._iconfile = None
         self._label = None
 
-        self._COMMAND = """
-import imp
-
-f, filepath, descr = imp.find_module("{module_name}", ["{dirname}"])
-module = imp.load_module("{module_name}", f, filepath, descr)
-module.{module_name}()
-"""
+        self._COMMAND = """import imp
+f, filepath, descr = imp.find_module('{module_name}', ['{dirname}'])
+module = imp.load_module('{module_name}', f, filepath, descr)
+module.{module_name}()"""
 
     @property
     def root(self):
@@ -105,6 +104,10 @@ module.{module_name}()
         """
         Run the command of the instance or copy the command to the active shelf
         based on the current modifiers.
+
+        If callbacks have been registered with fouind modifier integer the
+        function will trigger all callbacks. When a callback function returns a
+        non zero integer it will not execute the action's command
         """
 
         # get the current application and its linked keyboard modifiers
@@ -113,11 +116,13 @@ module.{module_name}()
 
         # If the menu has a callback registered for the current modifier
         # we run the callback instead of the action itself.
-        callbacks = self._root.registered_callbacks
-        callback = callbacks.get(int(modifiers), None)
-        if callback:
-            callback(self)
-            return
+        registered = self._root.registered_callbacks
+        callbacks = registered.get(int(modifiers), [])
+        for callback in callbacks:
+            signal = callback(self)
+            if signal != 0:
+                # Exit function on non-zero return code
+                return
 
         exec(self.process_command())
 
@@ -154,9 +159,7 @@ module.{module_name}()
             else:
                 filepath = os.path.normpath(os.path.expandvars(self._command))
 
-            command = self._wrap_filepath(filepath)
-
-            return command
+            return self._wrap_filepath(filepath)
 
     def has_tag(self, tag):
         """Check whether the tag matches with the action's tags.
