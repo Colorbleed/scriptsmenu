@@ -6,18 +6,36 @@ import maya.mel as mel
 import scriptsmenu
 from .vendor.Qt import QtCore, QtWidgets
 
-
 log = logging.getLogger(__name__)
 
 
-def to_shelf(action):
+def register_repeat_last(action):
+    """Register the action in repeatLast to ensure the RepeatLast hotkey works
+
+    Args:
+        action (action.Action): Action wigdet instance
+
+    Returns:
+        int: 0
+
     """
-    Copy clicked menu item to the currently active Maya shelf 
+    command = action.process_command()
+    command = command.replace("\n", "; ")
+    # Register command to Maya (mel)
+    cmds.repeatLast(addCommand='python("{}")'.format(command),
+                    addCommandLabel=action.label)
 
-    :param action: the action instance which is clicked
-    :type action: QtGui.QAction
+    return 0
 
-    :return: None
+
+def to_shelf(action):
+    """Copy clicked menu item to the currently active Maya shelf
+    Args:
+        action (action.Action): the action instance which is clicked
+
+    Returns:
+        int: 1
+
     """
 
     shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
@@ -31,6 +49,8 @@ def to_shelf(action):
                      image=action.iconfile or "pythonFamily.png",
                      annotation=action.statusTip(),
                      imageOverlayLabel=action.label or "")
+
+    return 1
 
 
 def _maya_main_window():
@@ -56,13 +76,14 @@ def find_scripts_menu(title, parent):
     """
     Check if the menu exists with the given title in the parent
 
-    :param title: the title name of the scripts menu
-    :type title: str
+    Args:
+        title (str): the title name of the scripts menu
 
-    :param parent: the menubar to check
-    :type parent: QtWidgets.QMenuBar
+        parent (QtWidgets.QMenuBar): the menubar to check
 
-    :return: QtWidgets.QMenu or None
+    Returns:
+        QtWidgets.QMenu or None
+
     """
 
     menu = None
@@ -81,13 +102,16 @@ def find_scripts_menu(title, parent):
 def main(title="Scripts", parent=None, objectName=None):
     """Build the main scripts menu in Maya
 
-    :param title: name of the menu in the application
-    :type title: str
+    Args:
+        title (str): name of the menu in the application
 
-    :param parent: the parent object for the menu
-    :type parent: QtWidgets.QtMenuBar
+        parent (QtWidgets.QtMenuBar): the parent object for the menu
 
-    :return: scriptsmenu.ScriptsMenu instance
+        objectName (str): custom objectName for scripts menu
+
+    Returns:
+        scriptsmenu.ScriptsMenu instance
+
     """
 
     mayamainbar = parent or _maya_main_menubar()
@@ -106,6 +130,8 @@ def main(title="Scripts", parent=None, objectName=None):
 
     # Register control + shift callback to add to shelf (maya behavior)
     modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
-    menu.register_callback(modifiers, to_shelf)
+    menu.register_callback(int(modifiers), to_shelf)
+
+    menu.register_callback(0, register_repeat_last)
 
     return menu

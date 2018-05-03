@@ -1,7 +1,7 @@
+import os
 import json
 import logging
-import os
-
+from collections import defaultdict
 
 from .vendor.Qt import QtWidgets, QtCore
 from . import action
@@ -15,14 +15,16 @@ class ScriptsMenu(QtWidgets.QMenu):
     updated = QtCore.Signal(QtWidgets.QMenu)
 
     def __init__(self, *args, **kwargs):
-        """
-        :param title: the name of the root menu which will be created
-        :type title: str
+        """Initialize Scripts menu
+
+        Args:
+            title (str): the name of the root menu which will be created
         
-        :param parent: the QObject to parent the menu to
-        :type parent: QtWidgets.QObject
+            parent (QtWidgets.QObject) : the QObject to parent the menu to
         
-        :returns: None
+        Returns:
+            None
+
         """
         QtWidgets.QMenu.__init__(self, *args, **kwargs)
 
@@ -30,7 +32,7 @@ class ScriptsMenu(QtWidgets.QMenu):
         self.update_action = None
 
         self._script_actions = []
-        self._callbacks = {}
+        self._callbacks = defaultdict(list)
 
         # Automatically add it to the parent menu
         parent = kwargs.get("parent", None)
@@ -86,16 +88,15 @@ class ScriptsMenu(QtWidgets.QMenu):
         separator.setObjectName("separator")
 
     def add_menu(self, title, parent=None):
-        """
-        Create a sub menu for a parent widget
+        """Create a sub menu for a parent widget
 
-        :param parent: the object to parent the menu to
-        :type parent: QtWidgets.QWidget
+        Args:
+            parent(QtWidgets.QWidget): the object to parent the menu to
 
-        :param title: the title of the menu
-        :type title: str
+            title(str): the title of the menu
         
-        :return: QtWidget.QMenu instance
+        Returns:
+             QtWidget.QMenu instance
         """
 
         if not parent:
@@ -111,36 +112,31 @@ class ScriptsMenu(QtWidgets.QMenu):
 
     def add_script(self, parent, title, command, sourcetype, icon=None,
                    tags=None, label=None, tooltip=None):
-        """
-        Create a clickable menu item which runs a script when clicked
+        """Create an action item which runs a script when clicked
 
-        :param parent: The widget to parent the item to
-        :type parent: QtWidget.QWidget
+        Args:
+            parent (QtWidget.QWidget): The widget to parent the item to
 
-        :param title: The text which will be displayed in the menu
-        :type title: str
+            title (str): The text which will be displayed in the menu
 
-        :param command: The command which needs to be run when the item is
-        clicked.
-        :type command: str
+            command (str): The command which needs to be run when the item is
+                           clicked.
 
-        :param sourcetype: The type of command, the way the command is
-        processed is based on the source type.
-        :type sourcetype: str
+            sourcetype (str): The type of command, the way the command is
+                              processed is based on the source type.
 
-        :param icon: The file path of an icon to display with the menu item
-        :type icon: str
+            icon (str): The file path of an icon to display with the menu item
 
-        :param tags: Keywords which describe a the actions of a scripts
-        :type tags: (list, tuple)
+            tags (list, tuple): Keywords which describe the action
 
-        :param label: A short description of the script which will be displayed
-        when hovering over the menu item
+            label (str): A short description of the script which will be displayed
+                         when hovering over the menu item
 
-        :param tooltip: A tip for the user about the usage fo the tool
-        :type tooltip: str
+            tooltip (str): A tip for the user about the usage fo the tool
 
-        :return: an instance of QtWidget.QAction
+        Returns:
+            QtWidget.QAction instance
+
         """
 
         assert tags is None or isinstance(tags, (list, tuple))
@@ -201,6 +197,10 @@ class ScriptsMenu(QtWidgets.QMenu):
         Args:
             parent (ScriptsMenu): script menu instance
             configuration (list): A ScriptsMenu configuration list
+
+        Returns:
+            None
+
         """
 
         for item in configuration:
@@ -236,10 +236,11 @@ class ScriptsMenu(QtWidgets.QMenu):
         self.update_action.setVisible(state)
 
     def clear_menu(self):
-        """
-        Clear all menu items which are not default
+        """Clear all menu items which are not default
 
-        :return: None
+        Returns:
+            None
+
         """
 
         # TODO: Set up a more robust implementation for this
@@ -248,12 +249,14 @@ class ScriptsMenu(QtWidgets.QMenu):
             self.removeAction(_action)
 
     def register_callback(self, modifiers, callback):
-        self._callbacks[int(modifiers)] = callback
+        self._callbacks[modifiers].append(callback)
 
     def _update_search(self, search):
         """Hide all the samples which do not match the user's import
         
-        :return: None
+        Returns:
+            None
+
         """
 
         if not search:
@@ -275,6 +278,17 @@ class ScriptsMenu(QtWidgets.QMenu):
 
 
 def load_configuration(path):
+    """Load the configuration from a file
+
+    Read out the JSON file which will dictate the structure of the scripts menu
+
+    Args:
+        path (str): file path of the .JSON file
+
+    Returns:
+        dict
+
+    """
 
     if not os.path.isfile(path):
         raise AttributeError("Given configuration is not "
