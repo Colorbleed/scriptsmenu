@@ -20,10 +20,15 @@ def _mari_main_window():
 
 
 def _mari_main_menubar():
-    """Retrieve the main menubar of the Nuke window"""
-    nuke_window = _mari_main_window()
+    """Get mari main menu bar.
+
+    Returns:
+        Retrieve the main menubar of the Nari window.
+
+    """
+    mari_window = _mari_main_window()
     menubar = [
-        i for i in nuke_window.children() if isinstance(i, QtWidgets.QMenuBar)
+        i for i in mari_window.children() if isinstance(i, QtWidgets.QMenuBar)
     ]
     assert len(menubar) == 1, "Error, could not find menu bar!"
     return menubar[0]
@@ -33,7 +38,7 @@ def main(title="Scripts"):
     """Build the main scripts menu in Mari.
 
     Args:
-        title (str): Name of the menu in the application
+        title (str): Name of the menu in the application.
 
     Returns:
         scriptsmenu.ScriptsMenu:  Instance object.
