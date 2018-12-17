@@ -39,7 +39,7 @@ def main(title="Scripts"):
         scriptsmenu.ScriptsMenu:  Instance object.
 
     """
-    mari_main_bar = _mari_main_window()
+    mari_main_bar = _mari_main_menubar()
     for mari_bar in mari_main_bar.children():
         if isinstance(mari_bar, scriptsmenu.ScriptsMenu):
             if mari_bar.title() == title:
