@@ -7,7 +7,7 @@ import scriptsmenu
 
 
 def _mari_main_window():
-    """Get mari main window.
+    """Get Mari main window.
 
     Returns:
         MriMainWindow: Mari's main window.
@@ -20,10 +20,10 @@ def _mari_main_window():
 
 
 def _mari_main_menubar():
-    """Get mari main menu bar.
+    """Get Mari main menu bar.
 
     Returns:
-        Retrieve the main menubar of the Nari window.
+        Retrieve the main menubar of the Mari window.
 
     """
     mari_window = _mari_main_window()
