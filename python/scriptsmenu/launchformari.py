@@ -16,10 +16,10 @@ def _mari_main_window():
     for obj in QtWidgets.QApplication.topLevelWidgets():
         if obj.metaObject().className() == 'MriMainWindow':
             return obj
-    raise RuntimeError('Could not find Nuke MainWindow instance')
+    raise RuntimeError('Could not find Mari MainWindow instance')
 
 
-def _nuke_main_menubar():
+def _mari_main_menubar():
     """Retrieve the main menubar of the Nuke window"""
     nuke_window = _mari_main_window()
     menubar = [
@@ -30,24 +30,19 @@ def _nuke_main_menubar():
 
 
 def main(title="Scripts"):
-    """Build the main scripts menu in Maya
+    """Build the main scripts menu in Mari.
 
     Args:
-        title (str): name of the menu in the application
-
-        parent (QtWidgets.QtMenuBar): the parent object for the menu
-
-        objectName (str): custom objectName for scripts menu
+        title (str): Name of the menu in the application
 
     Returns:
-        scriptsmenu.ScriptsMenu instance
+        scriptsmenu.ScriptsMenu:  Instance object.
 
     """
     mari_main_bar = _mari_main_window()
     for mari_bar in mari_main_bar.children():
         if isinstance(mari_bar, scriptsmenu.ScriptsMenu):
             if mari_bar.title() == title:
-                print mari_bar.title()
                 menu = mari_bar
                 return menu
     menu = scriptsmenu.ScriptsMenu(title=title, parent=mari_main_bar)
