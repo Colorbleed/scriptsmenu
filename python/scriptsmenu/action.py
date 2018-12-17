@@ -4,6 +4,8 @@ from .vendor.Qt import QtWidgets
 
 
 class Action(QtWidgets.QAction):
+    """Custom Action widget"""
+
     def __init__(self, parent=None):
 
         QtWidgets.QAction.__init__(self, parent)
@@ -14,6 +16,11 @@ class Action(QtWidgets.QAction):
         self._sourcetype = None
         self._iconfile = None
         self._label = None
+
+        self._COMMAND = """import imp
+f, filepath, descr = imp.find_module('{module_name}', ['{dirname}'])
+module = imp.load_module('{module_name}', f, filepath, descr)
+module.{module_name}()"""
 
     @property
     def root(self):
@@ -39,12 +46,12 @@ class Action(QtWidgets.QAction):
     def command(self, value):
         """
         Store the command in the QAction 
+
+        Args:
+            value (str): the full command which will be executed when clicked
         
-        :param value: the full command which needs to be executed when clicked,
-        it is also used to pass the command to the 
-        :type value: str
-        
-        :return: 
+        Return:
+             None
         """
         self._command = value
 
@@ -56,10 +63,13 @@ class Action(QtWidgets.QAction):
     def sourcetype(self, value):
         """
         Set the command type to get the correct execution of the command given
-        :param value: the name of the command type
-        :type value: str
+
+        Args:
+            value (str): the name of the command type
         
-        :return: None 
+        Returns:
+            None
+
         """
         self._sourcetype = value
 
@@ -69,11 +79,13 @@ class Action(QtWidgets.QAction):
 
     @iconfile.setter
     def iconfile(self, value):
-        """
-        Store the path to the image file which needs to be displayed
-        :param value: the path to the image
-        :type value: str
-        :return: 
+        """Store the path to the image file which needs to be displayed
+
+        Args:
+            value (str): the path to the image
+
+        Returns:
+            None
         """
         self._iconfile = value
 
@@ -85,11 +97,13 @@ class Action(QtWidgets.QAction):
     def label(self, value):
         """
         Set the abbreviation which will be used as overlay text in the shelf
+
+        Args:
+            value (str): an abbreviation of the name
         
-        :param value: an abbreviation of the name
-        :type value: str
-        
-        :return: 
+        Returns:
+            None
+
         """
         self._label = value
 
@@ -97,6 +111,11 @@ class Action(QtWidgets.QAction):
         """
         Run the command of the instance or copy the command to the active shelf
         based on the current modifiers.
+
+        If callbacks have been registered with fouind modifier integer the
+        function will trigger all callbacks. When a callback function returns a
+        non zero integer it will not execute the action's command
+
         """
 
         # get the current application and its linked keyboard modifiers
@@ -105,11 +124,13 @@ class Action(QtWidgets.QAction):
 
         # If the menu has a callback registered for the current modifier
         # we run the callback instead of the action itself.
-        callbacks = self._root.registered_callbacks
-        callback = callbacks.get(int(modifiers), None)
-        if callback:
-            callback(self)
-            return
+        registered = self._root.registered_callbacks
+        callbacks = registered.get(int(modifiers), [])
+        for callback in callbacks:
+            signal = callback(self)
+            if signal != 0:
+                # Exit function on non-zero return code
+                return
 
         exec(self.process_command())
 
@@ -129,8 +150,9 @@ class Action(QtWidgets.QAction):
         run it as a mel.eval. The string is then parsed to python as 
         exec("command"). 
 
-        :return: a clean command which can be used
-        :rtype: str
+        Returns:
+            str: a clean command which can be used
+
         """
         if self._sourcetype == "python":
             return self._command
@@ -142,11 +164,11 @@ class Action(QtWidgets.QAction):
 
         if self._sourcetype == "file":
             if os.path.isabs(self._command):
-                string = os.path.normpath(self._command)
+                filepath = self._command
             else:
-                string = os.path.normpath(os.path.expandvars(self._command))
+                filepath = os.path.normpath(os.path.expandvars(self._command))
 
-            return 'execfile("{}")'.format(string)
+            return self._wrap_filepath(filepath)
 
     def has_tag(self, tag):
         """Check whether the tag matches with the action's tags.
@@ -154,11 +176,11 @@ class Action(QtWidgets.QAction):
         A partial match will also return True, for example tag `a` will match
         correctly with the `ape` tag on the Action.
 
-        :param tag: The tag
-        :type tag: str
+        Args:
+            tag (str): The tag
         
-        :rtype: bool
-        :returns: Whether the action is tagged with given tag
+        Returns
+            bool: Whether the action is tagged with given tag
         
         """
 
@@ -168,3 +190,19 @@ class Action(QtWidgets.QAction):
             return True
 
         return False
+
+    def _wrap_filepath(self, file_path):
+        """Create a wrapped string for the python command
+
+        Args:
+            file_path (str): the filepath of a script
+
+        Returns:
+            str: the wrapped command
+        """
+
+        dirname = os.path.dirname(r"{}".format(file_path))
+        dirpath = dirname.replace("\\", "/")
+        module_name = os.path.splitext(os.path.basename(file_path))[0]
+
+        return self._COMMAND.format(module_name=module_name, dirname=dirpath)

@@ -1,23 +1,46 @@
-{
-  "Launcher": [
+[
     {
-      "title": "Echo command",
-      "tooltip": "Test print",
-      "command": "print('I am a tool launcher!')",
-      "sourcetype": "python",
-      "tags": ["test", "script", "echo", "command"]
-    },
-    {"title": "Echo second command",
-      "tooltip": "Test print",
-      "command": "print('I am a tool killer!')",
-      "sourcetype": "python",
-      "tags": ["test", "script", "echo", "command"]
-    },
-    {"title": "Launch script A",
-      "tooltip": "Test launcher",
-      "command": "$SCRIPTMENU/script_a.py",
-      "sourcetype": "file",
-      "tags": ["test", "script", "launch"]
+        "title":"Launcher",
+        "type": "menu",
+        "items": [
+            {
+                "type": "action",
+                "title": "Echo command",
+                "tooltip": "Test print",
+                "command": "print('I am a tool launcher!')",
+                "sourcetype": "python",
+                "tags": [
+                    "test",
+                    "script",
+                    "echo",
+                    "command"
+                ]
+            },
+            {
+                "type": "action",
+                "title": "Echo second command",
+                "tooltip": "Test print",
+                "command": "print('I am a tool killer!')",
+                "sourcetype": "python",
+                "tags": [
+                    "test",
+                    "script",
+                    "echo",
+                    "command"
+                ]
+            },
+            {
+                "type": "action",
+                "title": "Launch script A",
+                "tooltip": "Test launcher",
+                "command": "$SCRIPTMENU/script_a.py",
+                "sourcetype": "file",
+                "tags": [
+                    "test",
+                    "script",
+                    "launch"
+                ]
+            }
+        ]
     }
-  ]
-}
+]

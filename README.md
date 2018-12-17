@@ -33,12 +33,12 @@ menu = ScriptsMenu(title="Scripts",
 menu.add_script(parent=menu,
                 title="Script A",
                 command="print('A')",
-                sourcetype='',
+                sourcetype='python',
                 tags=["foobar", "nugget"])
 menu.add_script(parent=menu,
                 title="Script B",
                 command="print('B')",
-                sourcetype='',
+                sourcetype='python',
                 tags=["gold", "silver", "bronze"])
 menu.show()
 ```
@@ -97,6 +97,49 @@ menu.add_script(parent=menu,
                 sourcetype='python',
                 tags=["gold", "silver", "bronze"])
 
+```
+
+##### Configuration
+
+The menu can be reconstructed with help of a `.json` configuration file.
+The configuration of the menu is a list of dictionaries. The loader recognizes three types;
+
+* `menu`, a submenu for the main menu with its own actions
+  * this is indicated with the key `"items"`
+* `action`, a script to run
+* `separator`, this is an aesthetical option but can help with separating certain actions which belong
+to the same group.
+
+The order the items appear in the list dictates the order in which is will be created.
+
+```json
+[
+     {
+        "type": "action",
+        "title": "Run Sanity Check",
+        "command": "$SCRIPTSFOLDER\\general\\sanity_check.py",
+        "sourcetype": "file",
+        "tags": ["general","checks","pipeline"],
+        "tooltip": "Run the sanity check to ensure pipeline friendly content"
+    },
+    {
+        "type": "separator"
+    },
+    {
+        "type": "menu",
+        "title": "Animation",
+        "items":[
+            {
+                "type": "action",
+                "title": "Blendshapes UI",
+                "command": "$SCRIPTSFOLDER\\animation\\blendshapes_ui.py",
+                "sourcetype": "file",
+                "tags": ["animation","blendshapes","UI"],
+                "tooltip": "Open the Blendshapes UI"
+            }
+        ]
+    }
+]
 ```
 
 <br>
