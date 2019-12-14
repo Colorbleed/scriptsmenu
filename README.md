@@ -98,7 +98,28 @@ menu.add_script(parent=menu,
                 tags=["gold", "silver", "bronze"])
 
 ```
+An example for The Foundry Mari can be found in `launchformari.py`
 
+To show the menu in Mari:
+
+```python
+import scriptsmenu.launchformari as launchformari
+
+menu = launchformari.main(title="My Scripts")
+
+menu.add_script(parent=menu,
+                title="Script A",
+                command="print('A')",
+                sourcetype='python',
+                tags=["foobar", "nugget"])
+
+menu.add_script(parent=menu,
+                title="Script B",
+                command="print('B')",
+                sourcetype='python',
+                tags=["gold", "silver", "bronze"])
+
+```
 ##### Configuration
 
 The menu can be reconstructed with help of a `.json` configuration file.
