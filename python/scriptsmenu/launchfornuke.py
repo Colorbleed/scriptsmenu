@@ -8,7 +8,7 @@ def _nuke_main_window():
         if (obj.inherits('QMainWindow') and
                     obj.metaObject().className() == 'Foundry::UI::DockMainWindow'):
             return obj
-        raise RuntimeError('Could not find Nuke MainWindow instance')
+    raise RuntimeError('Could not find Nuke MainWindow instance')
 
 
 def _nuke_main_menubar():
