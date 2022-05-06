@@ -22,9 +22,6 @@ def _nuke_main_menubar():
 
 
 def main(title="Scripts"):
-    # Register control + shift callback to add to shelf (Nuke behavior)
-    # modifiers = QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier
-    # menu.register_callback(modifiers, to_shelf)
     nuke_main_bar = _nuke_main_menubar()
     for nuke_bar in nuke_main_bar.children():
         if isinstance(nuke_bar, scriptsmenu.ScriptsMenu):
